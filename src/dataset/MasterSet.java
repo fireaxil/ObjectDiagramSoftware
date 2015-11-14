@@ -78,11 +78,11 @@ public class MasterSet {
 	}
 	
 	private void generateReferences(int numReferences){
-		Random r = new Random(_instances.size());
+		Random r = new Random();
 		ArrayList<VirtualInstanceVariable> variables = new ArrayList<VirtualInstanceVariable>();
 		
 		for(int i = 0; i < numReferences; i++){
-			int x = r.nextInt();
+			int x = r.nextInt(_instances.size());
 			VirtualInstanceVariable var = new VirtualInstanceVariable(_allInstanceVarNames.get(i));
 			VirtualReference ref = new VirtualReference(var, _instances.get(x));
 			var.setReference(ref);

@@ -12,6 +12,7 @@ public class GeneratorTestCase {
     public void testRoutine(){
         masterSet = new MasterSet();
         masterSet.randomize(2,3,4);
+
         //System.out.println(masterSet.toString());
     }
 
