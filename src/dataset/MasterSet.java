@@ -15,7 +15,7 @@ public class MasterSet {
 	private ArrayList<String> _allInstanceVarNames;
 	
 	public MasterSet() {
-		
+		_references = new ArrayList<>();
 	}
 	
 	public void randomize(int numClasses, int numObjects, int numReferences) {
