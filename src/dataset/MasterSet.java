@@ -10,6 +10,7 @@ public class MasterSet {
 
 	private ArrayList<VirtualClass> _classes;
 	private ArrayList<VirtualObject> _instances;
+	private ArrayList<VirtualReference> _references;
 	
 	private ArrayList<String> _allInstanceVarNames;
 	
@@ -33,6 +34,8 @@ public class MasterSet {
 			_allInstanceVarNames = variableNames(numReferences);
 			generateReferences(numReferences);
 		}
+		
+		
 		
 		
 		
@@ -87,6 +90,7 @@ public class MasterSet {
 			VirtualReference ref = new VirtualReference(var, _instances.get(x));
 			var.setReference(ref);
 			variables.add(var);
+			_references.add(ref);
 		}
 		
 		for (VirtualInstanceVariable v : variables) {
@@ -109,5 +113,17 @@ public class MasterSet {
 			}
 		}
 		return allNames;
+	}
+	
+	public ArrayList<VirtualClass> getClasses(){
+		return _classes;
+	}
+	
+	public ArrayList<VirtualObject> getObjects(){
+		return _instances;
+	}
+	
+	public ArrayList<VirtualReference> getReferences(){
+		return _references;
 	}
 }
