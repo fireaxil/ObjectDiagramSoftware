@@ -1,6 +1,8 @@
 package codeGeneration;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
 import dataset.*;
 
@@ -15,23 +17,38 @@ public class CodeGenerator {
 
 	private MasterSet _masterSet;
 
+	private ArrayList<String> _cases;
+	private HashMap<String, String> _caseMapping;
+	private HashMap<String, Integer> _caseOrder;
+
 	public CodeGenerator(int numClasses, int numObjects, int numInstanceVars){
 		_numClasses = numClasses;
 		_numObjects = numObjects;
 		_numInstanceVars = numInstanceVars;
 		_masterSet = new MasterSet();
+
+		_cases = new ArrayList<String>();
+		_caseMapping = new HashMap<String, String>();
+		
+		
+		_caseOrder = new HashMap<String, Integer>();
+		_caseOrder.put("Free Case", 0);
+		_caseOrder.put("First Order Singular", 1);
+		_caseOrder.put("Dual Restrictive Case", 2);
+		_caseOrder.put("Last Order Singular", 3);
 	}
 
 	public ArrayList<String> generate(){
 		ArrayList<String> code = new ArrayList<String>();
 		_masterSet.randomize(_numClasses, _numObjects, _numInstanceVars);
+		_masterSet.output();
 		_classes = _masterSet.getClasses();
 		_instances = _masterSet.getObjects();
 		_instances.remove(_instances.size()-1);
-		for(int i = 0; i < createClasses(_classes).size(); i++){
-			code.add(createClasses(_classes).get(i));
+		ArrayList<String> classes = createClasses(_classes);
+		for(int i = 0; i< _classes.size(); i++){
+			code.add(classes.get(i));
 		}
-
 		return code;
 	}
 
@@ -44,9 +61,9 @@ public class CodeGenerator {
 			for(VirtualInstanceVariable vi: instances){
 				classFile += "\tprivate " + vi.getType() + " " + vi.getName() + ";\n"; 
 			}
+
 			String finalCode = createFinalCode(_classes.get(i));
 			classFile += finalCode;
-
 
 			code.add(classFile);
 		}
@@ -56,14 +73,17 @@ public class CodeGenerator {
 	public String createFinalCode(VirtualClass virtualClass){
 		String finalCode = "";
 		String cased = determineCase(virtualClass);
-		
-		System.out.println("The determined case is: " + cased);
+
+		System.out.println("For " + virtualClass.getName() + ", " + "The determined case is: " + cased);
+
+		_cases.add(cased);
+		_caseMapping.put(virtualClass.getName(), cased);
 		
 		ArrayList<VirtualInstanceVariable> vars = virtualClass.getInstanceVars();
 		if(cased.equals("Dual Restrictive Case")){
-			finalCode = "\n\tpublic " + virtualClass.getName() + "() {\n\n\t}\n\n\t";
+			finalCode = "\n\tpublic " + virtualClass.getName() + "() {\n\n\t}\n\n";
 			for(int i = 0; i < vars.size(); i ++){
-				finalCode += "\tpublic void set" + vars.get(i).getName() + "(" + vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ") {\n\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ";\n	}\n";
+				finalCode += "\tpublic void set" + vars.get(i).getName() + "(" + vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ") {\n\t\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ";\n	}\n";
 			}
 			finalCode += "}";
 		}
@@ -94,48 +114,48 @@ public class CodeGenerator {
 	public String determineCase(VirtualClass virtualClass){
 		String cased = "";
 		int decider = 0;
-		
+
 		for(VirtualObject vo: _instances){
 			if(vo.getTypeName().equals(virtualClass.getName())){
 				ArrayList<VirtualInstanceVariable> vars = vo.getInstanceVariables();
-				
+
 				//check to see if an object is referring to itself
 				for(VirtualInstanceVariable vi: vars){
 					VirtualObject tempVirtualObject = vi.getTarget();
 					if(vo.equals(tempVirtualObject)){
-						return "Dual Restrictive Case";
+						decider = 2;
 					}
 				}
 
 				//check to see if anything is referring to this object
 				for (VirtualObject otherVO : _instances) {
 					for (VirtualInstanceVariable viv : otherVO.getInstanceVariables()) {
-						if(viv.getTarget().equals(vo)){
-							vo.addToTargetedBy(otherVO);
-							if (decider == 0) {
-								decider = 1;
-							} else {
-								decider = 2;
+						if (viv.getTarget() != null) {
+							if(viv.getTarget().equals(vo)){
+								vo.addToTargetedBy(otherVO);
+								if (decider == 0) {
+									decider = 1;
+								} else {
+									decider = 2;
+								}
 							}
 						}
 					}
 				}
 
 				//check to see if it is referring to anything
-				for(VirtualInstanceVariable viv : vo.getInstanceVariables()){
-					if(viv.getTarget() != null){
-						if(decider == 1){
+				for (VirtualInstanceVariable viv : vo.getInstanceVariables()){
+					if (viv.getTarget() != null){
+						if (decider == 1){
 							decider = 2;
-						} else if (decider == 3) {
+						} else {
 							decider = 3;
-						} else if (decider == 2) {
-							decider = 2;
 						}
 					}
 				}
 			}
 		}
-		
+
 		switch(decider){
 		case 0: 
 			cased = "Free Case";
@@ -150,22 +170,118 @@ public class CodeGenerator {
 			cased =  "Last Order Singular";
 			break;
 		}
-		
-		System.out.println("The decider is: " + decider);
 		return cased;
 	}
-	
+
 	public String generateMain(){
-		String s = "";
-		s += "public class Driver {\n\t public static void main(String[] args) {\n\t ";
 		
-		return s;
+		// *** GENERATE VARIABLE INSTANTIATIONS ***
+		
+		String header = "public class Driver {\n\t public static void main(String[] args) {\n\n ";
+		
+		//reorder cases
+		int smallestSoFar;
+		for (int i = 0; i < _cases.size(); i++) {
+			smallestSoFar = i;
+			for (int j = i; j < _cases.size(); j++) {
+				if (_caseOrder.get(_cases.get(j)) < _caseOrder.get(_cases.get(smallestSoFar))) {
+					smallestSoFar = j;
+				}
+			}
+			Collections.swap(_cases, i, smallestSoFar);
+		}
+		
+		String beginning = "";
+		String ending = "";
+		
+		// <object, varName>
+		HashMap<VirtualObject, String> objectMap = new HashMap<VirtualObject, String>();
+		
+		//instantiate classes in order
+		int charNumber = 0;
+		for (String caseString : _cases) {
+			for (VirtualClass vc : _classes) {
+				if (_caseMapping.get(vc.getName()).equals(caseString)) {
+					for (VirtualObject o : _instances) {
+						if (o.getTypeName().equals(vc.getName())) {
+							
+							System.out.println("Iteration!");
+							
+							//first two rounds of declaration/assignment statements
+							if (caseString.equals("Free Case") || caseString.equals("First Order Singular") 
+									|| caseString.equals("Dual Restrictive Case")) {
+								beginning += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "();\n";
+								objectMap.put(o, getChar(charNumber));
+								charNumber++;
+							}
+							
+							//finishing off with some association relationships
+							if (caseString.equals("Last Order Singular")) {
+								ending += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "(";
+								
+								for (VirtualInstanceVariable iv : o.getInstanceVariables()) {
+									
+									if (iv.getTarget() == null) {
+										ending += "null, ";	
+									} else {
+										ending += iv.getType() + " " + objectMap.get(iv.getTarget()) + ", ";
+									}
+								}
+								
+								ending = ending.substring(0, ending.length() - 2);
+								ending += "); \n";
+								
+								charNumber++;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		
+			
+		// *** GENERATE VARIABLE ASSIGNMENTS
+			
+
+		
+		return header + beginning + ending;
+	}
+	
+	public String getChar(int charNumber){
+		return Character.toString((char)('a' + charNumber));
+	}
+
+	public ArrayList<String> getCases() {
+		return _cases;
 	}
 
 	public static void main(String[] args){
-		CodeGenerator c = new CodeGenerator(3,6,3);
-		System.out.print(c.generate().toString());
-		System.out.print(c.generateMain());
+
+		CodeGenerator c = null;
+
+		ArrayList<String> a = null;
+		boolean first = false;
+		boolean second = false;
+
+		while (!(first && second)) {
+			c = new CodeGenerator(4,10,3);
+			a = c.generate();
+			for (String s : c.getCases()) {
+				if (s.equals("First Order Singular")) {
+					first = true;
+				}
+				
+				if (s.equals("Last Order Singular")) {
+					second = true;
+				}
+			}
+		}
+		
+		
+		
+		System.out.print(a.toString());
+		System.out.println(c.generateMain());
 	}
 
 }
