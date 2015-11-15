@@ -2,7 +2,10 @@ package ui;
 
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.*;
+import javax.swing.plaf.BorderUIResource;
 
 public class UI implements Runnable {
 
@@ -32,9 +35,22 @@ public class UI implements Runnable {
 		_contentPane.add(code);
 		
 		// ***** SETTING UP EDITOR PANE *****
-		
-		
-		
+		JPanel jPanel = new JPanel();
+        JPanel buttonHolder = new JPanel();
+
+        formatJComponent(jPanel, new Dimension(WINDOW_WIDTH /2, WINDOW_HEIGHT), WINDOW_WIDTH /2 , 0);
+        formatJComponent(buttonHolder, new Dimension(200, 200), WINDOW_WIDTH / 2 , 300);
+
+        JLabel jLabel = new JLabel("Yooo what's uppppppp ;)");
+        JButton arrow = new JButton("ARROW");
+        arrow.setBounds(WINDOW_WIDTH /2, 350, 100, 100);
+        jPanel.add(arrow);
+
+        jPanel.add(jLabel);
+        jPanel.add(buttonHolder);
+        buttonHolder.setVisible(true);
+        jPanel.setVisible(true);
+		_contentPane.add(jPanel);
 		_mainWindow.setVisible(true);
 		
 		
