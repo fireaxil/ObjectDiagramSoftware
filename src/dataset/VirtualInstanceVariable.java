@@ -2,19 +2,28 @@ package dataset;
 
 public class VirtualInstanceVariable {
 
-	private VirtualReference _reference;
+	private String _type;
 	private String _name;
 	
-	public VirtualInstanceVariable(String name) {
+	private VirtualObject _target;
+	
+	
+	public VirtualInstanceVariable(String name, String type) {
 		_name = name;
+		_type = type;
+		_target = null;
 	}
 	
-	public void setReference(VirtualReference reference) {
-		_reference = reference;
+	public void setTarget(VirtualObject target) {
+		_target = target;
 	}
 	
-	public VirtualReference getReference() {
-		return _reference;
+	public String getType() {
+		return _type;
+	}
+	
+	public VirtualObject getTarget() {
+		return _target;
 	}
 	
 	public String getName() {

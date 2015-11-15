@@ -10,38 +10,28 @@ public class MasterSet {
 
 	private ArrayList<VirtualClass> _classes;
 	private ArrayList<VirtualObject> _instances;
-	private ArrayList<VirtualReference> _references;
 	
-	private ArrayList<String> _allInstanceVarNames;
+	int _instanceVariableCount;
 	
 	public MasterSet() {
-		_references = new ArrayList<>();
+		_instanceVariableCount = 0;
+		
+		
 	}
 	
-	public void randomize(int numClasses, int numObjects, int numReferences) {
+	public void randomize(int numClasses, int numObjects, int maxInstanceVariables) {
 		
 		if (numObjects > 52) {
 			System.out.println("That is too many objects");
 			System.exit(0);
 		}
 		
-		_classes = generateClasses(numClasses);
+		_classes = generateClasses(numClasses, maxInstanceVariables);
 		_instances = generateObjects(numClasses, numObjects);
-		
-		if (numReferences > numObjects * 2) {
-			System.err.println("That is too many references");
-		} else {
-			_allInstanceVarNames = variableNames(numReferences);
-			generateReferences(numReferences);
-		}
-		
-		
-		
-		
-		
+		assignReferences();
 	}
 	
-	private ArrayList<VirtualClass> generateClasses(int numClasses) {
+	private ArrayList<VirtualClass> generateClasses(int numClasses, int maxInstanceVariables) {
 		
 		if (numClasses < 1 || numClasses > 4) {
 			System.err.println("you moron");
@@ -49,8 +39,15 @@ public class MasterSet {
 		}
 		
 		ArrayList<VirtualClass> list = new ArrayList<VirtualClass>();
+		Random r = new Random();
+		
 		for (int i = 0; i < numClasses; i++) {
-			list.add(new VirtualClass(classNames[i]));
+			VirtualClass vc = new VirtualClass(classNames[i]);
+			int x = r.nextInt(maxInstanceVariables + 1);
+			for (int j = 0; j < x; j++) {
+				int z = r.nextInt(numClasses);
+				vc.addInstanceVariable(createInstanceVariable(classNames[z]));
+			}
 		}
 		
 		return list;
@@ -74,45 +71,38 @@ public class MasterSet {
 		numObjects = numObjects - list.size();
 		for (int i = 0; i < numObjects; i++) {
 			Collections.shuffle(_classes);
-			list.add(new VirtualObject(_classes.get(0)));
+			VirtualObject o = new VirtualObject(_classes.get(0)); 
+			for (VirtualInstanceVariable v : _classes.get(0).getInstanceVars()) {
+				VirtualInstanceVariable newVariable = new VirtualInstanceVariable(v.getName(), v.getType());
+				o.addInstanceVariable(newVariable);
+			}
+			list.add(o);
 		}
 		
 		return list;
 	}
 	
-	private void generateReferences(int numReferences){
+	private void assignReferences() {
 		Random r = new Random();
-		ArrayList<VirtualInstanceVariable> variables = new ArrayList<VirtualInstanceVariable>();
-		
-		for(int i = 0; i < numReferences; i++){
-			int x = r.nextInt(_instances.size());
-			VirtualInstanceVariable var = new VirtualInstanceVariable(_allInstanceVarNames.get(i));
-			VirtualReference ref = new VirtualReference(var, _instances.get(x));
-			var.setReference(ref);
-			variables.add(var);
-			_references.add(ref);
-		}
-		
-		for (VirtualInstanceVariable v : variables) {
-			Collections.shuffle(_classes);
-			_classes.get(0).addInstanceVariable(v);
+		for (VirtualObject o : _instances) {
+			for (VirtualInstanceVariable vi : o.getInstanceVariables()) {
+				int x = r.nextInt(_instances.size());
+				vi.setTarget(_instances.get(x));
+			}
 		}
 	}
 	
-	private ArrayList<String> variableNames(int numReferences) {
-		ArrayList<String> allNames = new ArrayList<String>();
-		for(int i = 0; i < numReferences; i++){
-			int x = 'a'+ i;
-			if(x > 'z'){
-				String s = "a" + Character.toString((char)(i - 'a'));
-				allNames.add("_" + s);
-			}
-			else{
-			String s = Character.toString((char)x);
-			allNames.add("_" + s);
-			}
+	//this needs to be revisited
+	private VirtualInstanceVariable createInstanceVariable(String type) {
+		int x = 'a'+ _instanceVariableCount;
+		String s = "";
+		if(x > 'z'){
+			s = "_" + "a" + Character.toString((char)(_instanceVariableCount - 'a'));
+		} else{
+			s = "_" + Character.toString((char) x);
 		}
-		return allNames;
+		
+		return new VirtualInstanceVariable(s, type);
 	}
 	
 	public ArrayList<VirtualClass> getClasses(){
@@ -121,9 +111,5 @@ public class MasterSet {
 	
 	public ArrayList<VirtualObject> getObjects(){
 		return _instances;
-	}
-	
-	public ArrayList<VirtualReference> getReferences(){
-		return _references;
 	}
 }
