@@ -7,10 +7,12 @@ public class VirtualObject {
 
 	private VirtualClass _type;
 	private ArrayList<VirtualInstanceVariable> _instanceVariables;
+	private ArrayList<VirtualObject> _targetedBy;
 	
 	public VirtualObject(VirtualClass type) {
 		_type = type;
 		_instanceVariables = new ArrayList<VirtualInstanceVariable>();
+		_targetedBy = new ArrayList<VirtualObject>();
 	}
 	
 	public VirtualClass getType() {
@@ -23,6 +25,10 @@ public class VirtualObject {
 	
 	public ArrayList<VirtualInstanceVariable> getInstanceVariables() {
 		return _instanceVariables;
+	}
+	
+	public void addToTargetedBy(VirtualObject virtualObject){
+		_targetedBy.add(virtualObject);
 	}
 	
 }
