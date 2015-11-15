@@ -23,5 +23,10 @@ public class VirtualClass {
 	public ArrayList<VirtualInstanceVariable> getInstanceVars() {
 		return _instanceVars;
 	}
+	
+	@Override
+	public String toString() {
+		return _className;
+	}
 
 }
