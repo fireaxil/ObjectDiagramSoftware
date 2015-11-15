@@ -19,6 +19,10 @@ public class VirtualObject {
 		return _type;
 	}
 	
+	public String getTypeName() {
+		return _type.getName();
+	}
+	
 	public void addInstanceVariable(VirtualInstanceVariable v) {
 		_instanceVariables.add(v);
 	}
@@ -29,6 +33,11 @@ public class VirtualObject {
 	
 	public void addToTargetedBy(VirtualObject virtualObject){
 		_targetedBy.add(virtualObject);
+	}
+	
+	@Override
+	public String toString() {
+		return _type.getName();
 	}
 	
 }
