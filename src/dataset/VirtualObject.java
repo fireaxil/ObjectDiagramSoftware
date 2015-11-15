@@ -9,10 +9,13 @@ public class VirtualObject {
 	private ArrayList<VirtualInstanceVariable> _instanceVariables;
 	private ArrayList<VirtualObject> _targetedBy;
 	
-	public VirtualObject(VirtualClass type) {
+	private int _id;
+	
+	public VirtualObject(VirtualClass type, int id) {
 		_type = type;
 		_instanceVariables = new ArrayList<VirtualInstanceVariable>();
 		_targetedBy = new ArrayList<VirtualObject>();
+		_id = id;
 	}
 	
 	public VirtualClass getType() {
@@ -33,6 +36,10 @@ public class VirtualObject {
 	
 	public void addToTargetedBy(VirtualObject virtualObject){
 		_targetedBy.add(virtualObject);
+	}
+	
+	public int getID() {
+		return _id;
 	}
 	
 	@Override

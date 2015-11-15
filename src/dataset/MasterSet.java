@@ -6,16 +6,17 @@ import java.util.Random;
 
 public class MasterSet {
 
-	public static String[] classNames = {"Alpha", "Beta", "Gamma", "Delta"};
+	public static String[] classNames = {"Alpha", "Beta", "Gamma", "Delta", "Epsilson"};
 
 	private ArrayList<VirtualClass> _classes;
 	private ArrayList<VirtualObject> _instances;
 
 	int _instanceVariableCount;
+	int _currentObjectID;
 
 	public MasterSet() {
 		_instanceVariableCount = 0;
-
+		_currentObjectID = 0;
 
 	}
 
@@ -34,7 +35,7 @@ public class MasterSet {
 
 	private ArrayList<VirtualClass> generateClasses(int numClasses, int maxInstanceVariables) {
 
-		if (numClasses < 1 || numClasses > 4) {
+		if (numClasses < 1 || numClasses > 5) {
 			System.err.println("you moron");
 			return null;
 		}
@@ -80,7 +81,8 @@ public class MasterSet {
 	}
 	
 	private VirtualObject assignInstanceVariables() {
-		VirtualObject o = new VirtualObject(_classes.get(0)); 
+		VirtualObject o = new VirtualObject(_classes.get(0), _currentObjectID);
+		_currentObjectID++;
 		for (VirtualInstanceVariable v : _classes.get(0).getInstanceVars()) {
 			VirtualInstanceVariable newVariable = new VirtualInstanceVariable(v.getName(), v.getType());
 			o.addInstanceVariable(newVariable);
@@ -95,7 +97,7 @@ public class MasterSet {
 				for (VirtualInstanceVariable vi : o.getInstanceVariables()) {
 					boolean checker = false;
 					while(checker == false){
-						int x = r.nextInt(_instances.size() - 1);
+						int x = r.nextInt(_instances.size());
 						String s = vi.getType();
 						
 						if(_instances.get(x) == null || _instances.get(x).getTypeName().equals(s)) {
@@ -113,6 +115,7 @@ public class MasterSet {
 		int x = 'a'+ _instanceVariableCount;
 		String s = "";
 		if(x > 'z'){
+			_instanceVariableCount -= 'a';
 			s = "_" + "a" + Character.toString((char)(_instanceVariableCount - 'a'));
 		} else{
 			s = "_" + Character.toString((char) x);
@@ -142,9 +145,19 @@ public class MasterSet {
 		System.out.println("****** Objects ******");
 		for (VirtualObject o : _instances) {
 			if (o != null) {
-				System.out.println("- " + o.getType());
+				System.out.println("- " + o.getType() + " [" + o.getID() + "]");
 				for (VirtualInstanceVariable vi : o.getInstanceVariables()) {
-					System.out.println("   (" + vi.getType() + ") "+ vi.getName() + " --> " + vi.getTarget());
+					String viTarget = "";
+					int viID = 0;
+					if (vi.getTarget() == null) {
+						viTarget = "[null]";
+						viID = -1;
+					} else {
+						viTarget = vi.getTarget().toString();
+						viID = vi.getTarget().getID();
+					}
+					System.out.println("   (" + vi.getType() + ") "+ 
+					vi.getName() + " --> " + viTarget + " [" + viID + "]");
 				}
 			}
 		}
