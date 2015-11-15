@@ -42,7 +42,7 @@ public class CodeGenerator {
 			classFile += "public class " + _classes.get(i).getName() + " {\n\n";
 			ArrayList<VirtualInstanceVariable> instances = _classes.get(i).getInstanceVars();
 			for(VirtualInstanceVariable vi: instances){
-				classFile += "private " + vi.getType() + " " + vi.getName() + ";\n"; 
+				classFile += "\tprivate " + vi.getType() + " " + vi.getName() + ";\n"; 
 			}
 			String finalCode = createFinalCode(_classes.get(i));
 			classFile += finalCode;
@@ -61,17 +61,17 @@ public class CodeGenerator {
 		
 		ArrayList<VirtualInstanceVariable> vars = virtualClass.getInstanceVars();
 		if(cased.equals("Dual Restrictive Case")){
-			finalCode = "\n public " + virtualClass.getName() + "() {\n\n	}\n\n	";
+			finalCode = "\n\tpublic " + virtualClass.getName() + "() {\n\n\t}\n\n\t";
 			for(int i = 0; i < vars.size(); i ++){
-				finalCode += "public void set" + vars.get(i).getName() + "(" + vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ") {\n	" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ";\n	}\n";
+				finalCode += "public void set" + vars.get(i).getName() + "(" + vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ") {\n\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ";\n	}\n";
 			}
 			finalCode += "}";
 		}
 		if(cased.equals("Free Case")||cased.equals("First Order Singular")){
-			finalCode = "\n public " + virtualClass.getName() + "() {\n\n	}\n}";
+			finalCode = "\n\tpublic " + virtualClass.getName() + "() {\n\n\t}\n}";
 		}
 		if(cased.equals("Last Order Singular")){
-			finalCode = "\n public " + virtualClass.getName() + "( ";
+			finalCode = "\n\tpublic " + virtualClass.getName() + "( ";
 			for(int i = 0; i < vars.size(); i ++){
 				if(i == vars.size()-1){
 					finalCode += vars.get(i).getType() + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ") {\n";
@@ -81,9 +81,9 @@ public class CodeGenerator {
 				}
 			}
 			for(int i = 0; i < vars.size(); i ++){
-				finalCode += "	" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ";\n";
+				finalCode += "\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ";\n";
 			}
-			finalCode += "	}\n}";
+			finalCode += "\t}\n}";
 
 		}
 
@@ -153,10 +153,18 @@ public class CodeGenerator {
 		System.out.println("The decider is: " + decider);
 		return cased;
 	}
+	
+	public String generateMain(){
+		String s = "";
+		s += "public class Driver {\n\t public static void main(String[] args) {\n\t ";
+		
+		return s;
+	}
 
 	public static void main(String[] args){
 		CodeGenerator c = new CodeGenerator(3,6,9);
 		System.out.print(c.generate().toString());
+		System.out.print(c.generateMain());
 	}
 
 }
