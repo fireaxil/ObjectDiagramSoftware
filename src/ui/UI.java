@@ -43,9 +43,15 @@ public class UI implements Runnable {
 
         JLabel jLabel = new JLabel("Yooo what's uppppppp ;)");
         JButton arrow = new JButton("ARROW");
-        arrow.setBounds(WINDOW_WIDTH /2, 350, 100, 100);
-        jPanel.add(arrow);
+		JButton circle = new JButton("CIRCLE");
+		JButton square = new JButton("SQUARE");
 
+        arrow.setBounds(WINDOW_WIDTH /2, 40, 100, 50);
+        circle.setBounds(WINDOW_WIDTH /2, 90 ,100 ,50);
+		square.setBounds(WINDOW_WIDTH / 2, 140, 100, 50);
+		_contentPane.add(arrow);
+		_contentPane.add(circle);
+		_contentPane.add(square);
         jPanel.add(jLabel);
         jPanel.add(buttonHolder);
         buttonHolder.setVisible(true);
