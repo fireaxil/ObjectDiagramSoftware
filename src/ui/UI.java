@@ -2,10 +2,14 @@ package ui;
 
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+
 import javax.swing.*;
+
 import java.util.List;
 
 public class UI implements Runnable {
@@ -42,42 +46,28 @@ public class UI implements Runnable {
         formatJComponent(jPanel, new Dimension(WINDOW_WIDTH /2, WINDOW_HEIGHT), WINDOW_WIDTH /2 , 0);
         formatJComponent(buttonHolder, new Dimension(200, 200), WINDOW_WIDTH / 2 , 300);
 
-        JLabel jLabel = new JLabel("Yooo what's uppppppp ;)");
+        JLabel jLabel = new JLabel("Edit Object Diagram Here:");
+        
         JButton arrow = new JButton("ARROW");
-		JButton circle = new JButton("CIRCLE");
+		
+        JButton circle = new JButton("CIRCLE");
+		circle.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Circle c = new Circle(100, 100, 50, 50);
+		        jPanel.addCircle(c);
+			}
+		});
+		
 		JButton square = new JButton("SQUARE");
 
         arrow.setBounds(WINDOW_WIDTH /2, 40, 100, 50);
         circle.setBounds(WINDOW_WIDTH /2, 90 ,100 ,50);
 		square.setBounds(WINDOW_WIDTH / 2, 140, 100, 50);
 
-        circle.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                Circle circle = new Circle(e.getX(), e.getY(), 50, 50);
-                jPanel.addCircle(circle);
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        });
+        
+        
+        
 
 		_contentPane.add(arrow);
 		_contentPane.add(circle);
