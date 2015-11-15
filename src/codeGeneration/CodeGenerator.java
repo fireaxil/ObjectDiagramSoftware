@@ -63,7 +63,7 @@ public class CodeGenerator {
 		if(cased.equals("Dual Restrictive Case")){
 			finalCode = "\n\tpublic " + virtualClass.getName() + "() {\n\n\t}\n\n\t";
 			for(int i = 0; i < vars.size(); i ++){
-				finalCode += "public void set" + vars.get(i).getName() + "(" + vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ") {\n\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ";\n	}\n";
+				finalCode += "\tpublic void set" + vars.get(i).getName() + "(" + vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ") {\n\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ";\n	}\n";
 			}
 			finalCode += "}";
 		}
@@ -74,14 +74,14 @@ public class CodeGenerator {
 			finalCode = "\n\tpublic " + virtualClass.getName() + "( ";
 			for(int i = 0; i < vars.size(); i ++){
 				if(i == vars.size()-1){
-					finalCode += vars.get(i).getType() + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ") {\n";
+					finalCode += vars.get(i).getType() + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ") {\n";
 				}
 				else{
-					finalCode += vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + " , ";
+					finalCode += vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + " , ";
 				}
 			}
 			for(int i = 0; i < vars.size(); i ++){
-				finalCode += "\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()-1) + ";\n";
+				finalCode += "\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ";\n";
 			}
 			finalCode += "\t}\n}";
 
@@ -96,8 +96,9 @@ public class CodeGenerator {
 		int decider = 0;
 		
 		for(VirtualObject vo: _instances){
-			if(vo.getType().equals(virtualClass.getName())){
+			if(vo.getTypeName().equals(virtualClass.getName())){
 				ArrayList<VirtualInstanceVariable> vars = vo.getInstanceVariables();
+				
 				//check to see if an object is referring to itself
 				for(VirtualInstanceVariable vi: vars){
 					VirtualObject tempVirtualObject = vi.getTarget();
@@ -162,7 +163,7 @@ public class CodeGenerator {
 	}
 
 	public static void main(String[] args){
-		CodeGenerator c = new CodeGenerator(3,6,9);
+		CodeGenerator c = new CodeGenerator(3,6,3);
 		System.out.print(c.generate().toString());
 		System.out.print(c.generateMain());
 	}
