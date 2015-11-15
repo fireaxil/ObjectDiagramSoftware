@@ -4,8 +4,9 @@ package ui;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import javax.swing.*;
-import javax.swing.plaf.BorderUIResource;
+import java.util.List;
 
 public class UI implements Runnable {
 
@@ -35,7 +36,7 @@ public class UI implements Runnable {
 		_contentPane.add(code);
 		
 		// ***** SETTING UP EDITOR PANE *****
-		JPanel jPanel = new JPanel();
+		DrawingPanel jPanel = new DrawingPanel();
         JPanel buttonHolder = new JPanel();
 
         formatJComponent(jPanel, new Dimension(WINDOW_WIDTH /2, WINDOW_HEIGHT), WINDOW_WIDTH /2 , 0);
@@ -49,6 +50,35 @@ public class UI implements Runnable {
         arrow.setBounds(WINDOW_WIDTH /2, 40, 100, 50);
         circle.setBounds(WINDOW_WIDTH /2, 90 ,100 ,50);
 		square.setBounds(WINDOW_WIDTH / 2, 140, 100, 50);
+
+        circle.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                Circle circle = new Circle(e.getX(), e.getY(), 50, 50);
+                jPanel.addCircle(circle);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+
 		_contentPane.add(arrow);
 		_contentPane.add(circle);
 		_contentPane.add(square);
@@ -72,4 +102,41 @@ public class UI implements Runnable {
 		return _mainWindow.getLayeredPane().getHeight();
 	}
 
+    class Circle {
+        int x,y, width, height;
+
+        public Circle(int x, int y, int width, int height){
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+
+        public void draw(Graphics g){
+            g.drawOval(x, y, width, height);
+        }
+
+    }
+    class DrawingPanel extends JPanel {
+        List <Circle> circles = new ArrayList<>();
+
+        @Override
+        protected void paintComponent(Graphics g){
+            super.paintComponent(g);
+            for(Circle circle : circles){
+                circle.draw(g);
+            }
+        }
+
+        public void addCircle(Circle circle){
+            circles.add(circle);
+            repaint();
+        }
+
+        @Override
+        public Dimension getPreferredSize(){
+            return new Dimension(100,100);
+        }
+
+    }
 }
