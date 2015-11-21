@@ -6,7 +6,9 @@ import java.util.Random;
 
 public class MasterSet {
 
-	public static String[] classNames = {"Alpha", "Beta", "Gamma", "Delta", "Epsilson"};
+	public static String[] classNames = {"Alpha", "Beta", "Gamma", "Delta", 
+		"Epsilson", "Zeta,", "Eta", "Theta", 
+		"Iota", "Kappa", "Lamba"};
 
 	private ArrayList<VirtualClass> _classes;
 	private ArrayList<VirtualObject> _instances;
@@ -17,18 +19,19 @@ public class MasterSet {
 	public MasterSet() {
 		_instanceVariableCount = 0;
 		_currentObjectID = 0;
-
 	}
 
 	public void randomize(int numClasses, int numObjects, int maxInstanceVariables) {
 
 		if (numObjects > 52) {
-			System.out.println("That is too many objects");
+			System.err.println("Error: you have exceeded the 52 object limit.");
 			System.exit(0);
 		}
 
 		_classes = generateClasses(numClasses, maxInstanceVariables);
 		_instances = generateObjects(numClasses, numObjects);
+		
+		//We want some instance variables to contain a null reference
 		_instances.add(null);
 		assignReferences();
 	}
@@ -36,7 +39,7 @@ public class MasterSet {
 	private ArrayList<VirtualClass> generateClasses(int numClasses, int maxInstanceVariables) {
 
 		if (numClasses < 1 || numClasses > 5) {
-			System.err.println("you moron");
+			System.err.println("Error: you have exceeded the 5 class limit");
 			return null;
 		}
 
@@ -93,7 +96,7 @@ public class MasterSet {
 	private void assignReferences() {
 		Random r = new Random();
 		for (VirtualObject o : _instances) {
-			if(o!=null){
+			if (o != null){
 				for (VirtualInstanceVariable vi : o.getInstanceVariables()) {
 					boolean checker = false;
 					while(checker == false){
@@ -109,19 +112,26 @@ public class MasterSet {
 			}
 		}
 	}
-
-	//this needs to be revisited
+	
+	//able to generate up to 676 unique two-letter variable names (26 * 26)
 	private VirtualInstanceVariable createInstanceVariable(String type) {
-		int x = 'a'+ _instanceVariableCount;
-		String s = "";
-		if(x > 'z'){
-			_instanceVariableCount -= 'a';
-			s = "_" + "a" + Character.toString((char)(_instanceVariableCount - 'a'));
-		} else{
-			s = "_" + Character.toString((char) x);
+		
+		int wraps = _instanceVariableCount / 26;
+		int remainder = _instanceVariableCount % 26;
+		
+		char c;
+		String s = "_";
+		
+		if (wraps > 0) {
+			c = (char) ('a' + (wraps - 1));
+			s = s + c + "";
 		}
 		
+		c = (char) ('a' + remainder);
+		s = s + c;
+		
 		_instanceVariableCount++;
+		
 		return new VirtualInstanceVariable(s, type);
 	}
 
