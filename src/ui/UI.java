@@ -46,6 +46,7 @@ public class UI implements Runnable {
 		_mainContentPane.setLayout(null);
 		_window.setContentPane(_mainContentPane);
 		_window.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		_window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		_window.setVisible(true);
 		_paneHeight = _window.getRootPane().getHeight();
