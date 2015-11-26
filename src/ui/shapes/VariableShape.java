@@ -11,7 +11,7 @@ import ui.UI;
 
 public class VariableShape extends Shape {
 
-	public static double SIDE = 25;
+	public static double SIDE = 22;
 	public boolean _hovering;
 	public ObjectShape _reference;
 
@@ -32,7 +32,11 @@ public class VariableShape extends Shape {
 		g2.setComposite(UI.generateAlpha(1.0f));
 	}
 
-
+	public void drawName(Graphics2D g2) {
+		float x = (float) _x;
+		float y = (float) _y - ((float) SIDE / 2 + 5);
+		super.drawName(g2, x, y);
+	}
 
 	@Override
 	public double distanceFromCenter(double x, double y) {

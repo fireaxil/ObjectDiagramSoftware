@@ -13,7 +13,7 @@ import ui.UI;
 
 public class ObjectShape extends Shape {
 
-	public static int RADIUS = 65;
+	public static int RADIUS = 58;
 	private ArrayList<VariableShape> _instanceVariables;
 	
 	public ObjectShape(double x, double y) {
@@ -54,10 +54,14 @@ public class ObjectShape extends Shape {
 		super.draw(g2, state, preliminary);
 		g2.draw(new Ellipse2D.Double(_x - RADIUS, _y - RADIUS, RADIUS * 2, RADIUS * 2));
 		
-		g2.drawString(_name, (float) _x, (float) _y - (RADIUS + 5)); 
-		
 		//shape objects must clean up after themselves
 		g2.setComposite(UI.generateAlpha(1.0f));
+	}
+	
+	public void drawName(Graphics2D g2) {
+		float x = (float) _x;
+		float y = (float) _y - (RADIUS + 5);
+		super.drawName(g2, x, y);
 	}
 
 	@Override
