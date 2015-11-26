@@ -32,6 +32,8 @@ public abstract class Shape {
 
 	public void draw(Graphics2D g2, int state, boolean preliminary) {
 
+		UI.enableAntiAliasing(g2);
+		
 		if (state == 0) {
 			g2.setColor(Color.BLACK); //inactive
 		} else if (state == 1) {
