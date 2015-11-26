@@ -11,8 +11,9 @@ import ui.UI;
 
 public class VariableShape extends Shape {
 
-	public static double SIDE = 25;
+	public static double SIDE = 22;
 	public boolean _hovering;
+	public ObjectShape _reference;
 
 	public VariableShape(double x, double y) {
 		super(x, y);
@@ -20,18 +21,22 @@ public class VariableShape extends Shape {
 	}
 
 	//override draw
-		@Override
-		public void draw(Graphics2D g2, int state, boolean preliminary) {
-			super.draw(g2, state, preliminary);
-			g2.draw(new Rectangle2D.Double(_x - SIDE / 2, _y - SIDE / 2, SIDE, SIDE));
-			
-			g2.drawString(_name, (float) _x, (float) _y - ((float) SIDE / 2 + 5));
-			
-			//shape objects must clean up after themselves
-			g2.setComposite(UI.generateAlpha(1.0f));
-		}
-	
-	
+	@Override
+	public void draw(Graphics2D g2, int state, boolean preliminary) {
+		super.draw(g2, state, preliminary);
+		g2.draw(new Rectangle2D.Double(_x - SIDE / 2, _y - SIDE / 2, SIDE, SIDE));
+
+		g2.drawString(_name, (float) _x, (float) _y - ((float) SIDE / 2 + 5));
+
+		//shape objects must clean up after themselves
+		g2.setComposite(UI.generateAlpha(1.0f));
+	}
+
+	public void drawName(Graphics2D g2) {
+		float x = (float) _x;
+		float y = (float) _y - ((float) SIDE / 2 + 5);
+		super.drawName(g2, x, y);
+	}
 
 	@Override
 	public double distanceFromCenter(double x, double y) {
