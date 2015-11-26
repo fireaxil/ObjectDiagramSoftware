@@ -41,6 +41,7 @@ public class EditorPane extends JLayeredPane {
 	private Shape _activeShape;
 
 	private VariableShape _activeReferenceOrigin;
+	private VariableShape _cancelBox;
 	
 	private String _currentMessage;
 	private int _messageTimer;
@@ -48,7 +49,7 @@ public class EditorPane extends JLayeredPane {
 	private DragHandler _drag;
 	private boolean _dragging;
 
-	Timer _t;
+	private Timer _t;
 	private Shape _preliminaryPlacing;
 
 	private static int BUTTON_SIZE = 45;
@@ -321,7 +322,7 @@ public class EditorPane extends JLayeredPane {
 	//properly remove all defunct shapes
 	private void garbageCollect() {
 
-		ArrayList<Shape> toCheck = new ArrayList<Shape>();
+		ArrayList<Shape> variables = new ArrayList<Shape>();
 		
 		Iterator<Shape> i = _onScreenShapes.iterator();
 		while (i.hasNext()) {
@@ -332,7 +333,6 @@ public class EditorPane extends JLayeredPane {
 			if (s.getType().equals("Object")) {
 				ObjectShape o = (ObjectShape) s;
 				o.garbageCollect();
-				toCheck.add(o);
 			}
 			
 			if (s.isDefunct()) {
@@ -343,12 +343,11 @@ public class EditorPane extends JLayeredPane {
 			}
 		}
 		
-		for (Shape s : toCheck) {
-			for (Shape v : _onScreenShapes) {
-				if (v.getType().equals("Variable")) {
-					if (s.equals(((VariableShape) v)._reference)) {
-						((VariableShape) v)._reference = null;
-					}
+		for (Shape s : _onScreenShapes) {
+			if (s.getType().equals("Variable")) {
+				VariableShape v = (VariableShape) s;
+				if (!_onScreenShapes.contains(v._reference)) {
+					v._reference = null;
 				}
 			}
 		}
