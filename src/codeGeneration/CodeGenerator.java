@@ -49,6 +49,7 @@ public class CodeGenerator {
 		for(int i = 0; i< _classes.size(); i++){
 			code.add(classes.get(i));
 		}
+		
 		code.add(generateMain());
 		return code;
 	}
@@ -276,7 +277,7 @@ public class CodeGenerator {
 		return _cases;
 	}
 
-	public static void main(String[] args){
+	/*public static void main(String[] args){
 
 		CodeGenerator c = null;
 
@@ -300,8 +301,9 @@ public class CodeGenerator {
 
 
 
-		System.out.print(a.toString());
-		System.out.println(c.generateMain());
-	}
+		
+		a.add(c.generateMain());
+		System.out.println(a.toString());
+	}*/
 
 }

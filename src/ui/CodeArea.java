@@ -71,9 +71,11 @@ public class CodeArea extends JPanel implements Observer {
 				JComboBox jcb = (JComboBox)e.getSource();
 				
 				int index = jcb.getSelectedIndex();
-				System.out.println(_codeView.getText());
 				
-				System.out.println(files.get(index));
+				
+				//System.out.println(files.get(index));
+				System.out.println(files.toString());
+				
 			}
 			
 		});
