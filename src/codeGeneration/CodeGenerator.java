@@ -29,8 +29,8 @@ public class CodeGenerator {
 
 		_cases = new ArrayList<String>();
 		_caseMapping = new HashMap<String, String>();
-		
-		
+
+
 		_caseOrder = new HashMap<String, Integer>();
 		_caseOrder.put("Free Case", 0);
 		_caseOrder.put("First Order Singular", 1);
@@ -78,7 +78,7 @@ public class CodeGenerator {
 
 		_cases.add(cased);
 		_caseMapping.put(virtualClass.getName(), cased);
-		
+
 		ArrayList<VirtualInstanceVariable> vars = virtualClass.getInstanceVars();
 		if(cased.equals("Dual Restrictive Case")){
 			finalCode = "\n\tpublic " + virtualClass.getName() + "() {\n\n\t}\n\n";
@@ -94,7 +94,7 @@ public class CodeGenerator {
 			finalCode = "\n\tpublic " + virtualClass.getName() + "( ";
 			for(int i = 0; i < vars.size(); i ++){
 				if(i == vars.size()-1){
-					finalCode += vars.get(i).getType() + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ") {\n";
+					finalCode += vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ") {\n";
 				}
 				else{
 					finalCode += vars.get(i).getType() + " " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + " , ";
@@ -174,11 +174,11 @@ public class CodeGenerator {
 	}
 
 	public String generateMain(){
-		
+
 		// *** GENERATE VARIABLE INSTANTIATIONS ***
-		
+
 		String header = "public class Driver {\n\t public static void main(String[] args) {\n\n ";
-		
+
 		//reorder cases
 		int smallestSoFar;
 		for (int i = 0; i < _cases.size(); i++) {
@@ -190,13 +190,14 @@ public class CodeGenerator {
 			}
 			Collections.swap(_cases, i, smallestSoFar);
 		}
-		
-		String beginning = "";
+
+		String beginning = "\t\t";
 		String ending = "";
-		
+		String dualCleanup = "";
+
 		// <object, varName>
 		HashMap<VirtualObject, String> objectMap = new HashMap<VirtualObject, String>();
-		
+
 		//instantiate classes in order
 		int charNumber = 0;
 		for (String caseString : _cases) {
@@ -204,33 +205,36 @@ public class CodeGenerator {
 				if (_caseMapping.get(vc.getName()).equals(caseString)) {
 					for (VirtualObject o : _instances) {
 						if (o.getTypeName().equals(vc.getName())) {
-							
-							System.out.println("Iteration!");
-							
+
 							//first two rounds of declaration/assignment statements
 							if (caseString.equals("Free Case") || caseString.equals("First Order Singular") 
 									|| caseString.equals("Dual Restrictive Case")) {
-								beginning += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "();\n";
+								beginning += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "();\n\t\t";
+
+
+
 								objectMap.put(o, getChar(charNumber));
 								charNumber++;
 							}
-							
+
+
+
 							//finishing off with some association relationships
 							if (caseString.equals("Last Order Singular")) {
 								ending += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "(";
-								
+
 								for (VirtualInstanceVariable iv : o.getInstanceVariables()) {
-									
+
 									if (iv.getTarget() == null) {
 										ending += "null, ";	
 									} else {
-										ending += iv.getType() + " " + objectMap.get(iv.getTarget()) + ", ";
+										ending += objectMap.get(iv.getTarget()) + ", ";
 									}
 								}
-								
+								objectMap.put(o, getChar(charNumber));
 								ending = ending.substring(0, ending.length() - 2);
-								ending += "); \n";
-								
+								ending += "); \n\t\t";
+
 								charNumber++;
 							}
 						}
@@ -238,16 +242,31 @@ public class CodeGenerator {
 				}
 			}
 		}
-		
-		
-			
-		// *** GENERATE VARIABLE ASSIGNMENTS
-			
+		for (String caseString : _cases) {
+			for (VirtualClass vc : _classes) {
+				if (_caseMapping.get(vc.getName()).equals(caseString)) {
+					for (VirtualObject o : _instances) {
+						if (o.getTypeName().equals(vc.getName())) {
+							if(caseString.equals("Dual Restrictive Case")){
+								for(int i = 0; i < o.getInstanceVariables().size(); i ++){
+									if(o.getInstanceVariables().get(i).getTarget() != null){
+										dualCleanup += objectMap.get(o) + ".set" + o.getInstanceVariables().get(i).getName() + "(" + objectMap.get(o.getInstanceVariables().get(i).getTarget()) + ");\n";
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 
-		
-		return header + beginning + ending;
+		// *** GENERATE VARIABLE ASSIGNMENTS
+
+
+
+		return header + beginning + ending + dualCleanup + "\n\t}\n}";
 	}
-	
+
 	public String getChar(int charNumber){
 		return Character.toString((char)('a' + charNumber));
 	}
@@ -271,15 +290,15 @@ public class CodeGenerator {
 				if (s.equals("First Order Singular")) {
 					first = true;
 				}
-				
+
 				if (s.equals("Last Order Singular")) {
 					second = true;
 				}
 			}
 		}
-		
-		
-		
+
+
+
 		System.out.print(a.toString());
 		System.out.println(c.generateMain());
 	}
