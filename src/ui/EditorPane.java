@@ -190,6 +190,16 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 			_activeShape = runningMin;
+			if (_activeShape != null) {
+				if (_activeReferenceOrigin != null) {
+					if (_activeShape.getType().equals("Object")) {
+						_activeReferenceOrigin._reference = (ObjectShape) _activeShape;
+						_activeReferenceOrigin = null;
+					}
+				}
+			}
+			
+			
 			_preliminaryPlacing = null;
 
 		} else {
@@ -357,14 +367,8 @@ public class EditorPane extends JLayeredPane {
 					alreadyDrawn = true;
 				}
 			}
-
-			if (!alreadyDrawn) {
-				int state = 0; //object is inactive
-				if (s.equals(_activeShape)) state = 1; //object is currently active
-				s.draw(g2, state, s.equals(_preliminaryPlacing));
-			}
 			
-			//display arrow
+			//display targeting arrow
 			if (_activeReferenceOrigin != null) {
 				Reference r = new Reference(g2, 15, 2.0f);
 				r.drawArrow(_activeReferenceOrigin, 
@@ -378,12 +382,27 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 			
+			//display reference arrow
+			if (s.getType().equals("Variable")) {
+				VariableShape ov = (VariableShape) s;
+				if (ov._reference != null) {
+					Reference r = new Reference(g2, 15, 2.0f);
+					r.drawArrow(ov, ov._reference, false);
+				}
+			}
+			
 			//display message
 			if (_messageTimer > 0) {
 				g2.setColor(Color.RED);
 				UI.enableAntiAliasing(g2);
 				g2.drawString(_currentMessage, UI.WINDOW_WIDTH / 2 - _currentMessage.length() * 7 - UI.PADDING * 2, 
 						UI.PADDING * 2);
+			}
+			
+			if (!alreadyDrawn) {
+				int state = 0; //object is inactive
+				if (s.equals(_activeShape)) state = 1; //object is currently active
+				s.draw(g2, state, s.equals(_preliminaryPlacing));
 			}
 		}
 
