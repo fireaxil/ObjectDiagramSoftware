@@ -4,6 +4,7 @@ import java.awt.AWTException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -164,8 +165,23 @@ public class EditorPane extends JLayeredPane {
 	private void createReference() {
 		if (_activeShape != null && "Variable".equals(_activeShape.getType())) {
 			
-			_activeReferenceOrigin = (VariableShape) _activeShape;
+			//ensure that the selected variable is contained by an object
+			boolean isContained = false;
+			for (Shape s : _onScreenShapes) {
+				if (s.getType().equals("Object")) {
+					if (((ObjectShape) s).isParentTo((VariableShape) _activeShape)) {
+						isContained = true;
+						((VariableShape) _activeShape)._reference = null;
+					}
+				}
+			}
 			
+			//only begin targeting if the variable is contained
+			if (isContained) {
+				_activeReferenceOrigin = (VariableShape) _activeShape;
+			} else {
+				displayMessage("Please select a variable contained in an object.");
+			}
 		} else {
 			displayMessage("Please select a variable contained in an object.");
 		}
@@ -272,6 +288,7 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		}
+		
 		repaint();
 	}
 
@@ -304,6 +321,8 @@ public class EditorPane extends JLayeredPane {
 	//properly remove all defunct shapes
 	private void garbageCollect() {
 
+		ArrayList<Shape> toCheck = new ArrayList<Shape>();
+		
 		Iterator<Shape> i = _onScreenShapes.iterator();
 		while (i.hasNext()) {
 
@@ -313,6 +332,7 @@ public class EditorPane extends JLayeredPane {
 			if (s.getType().equals("Object")) {
 				ObjectShape o = (ObjectShape) s;
 				o.garbageCollect();
+				toCheck.add(o);
 			}
 			
 			if (s.isDefunct()) {
@@ -322,6 +342,17 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		}
+		
+		for (Shape s : toCheck) {
+			for (Shape v : _onScreenShapes) {
+				if (v.getType().equals("Variable")) {
+					if (s.equals(((VariableShape) v)._reference)) {
+						((VariableShape) v)._reference = null;
+					}
+				}
+			}
+		}
+		
 		repaint();
 	}
 
@@ -391,21 +422,38 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 			
-			//display message
-			if (_messageTimer > 0) {
-				g2.setColor(Color.RED);
-				UI.enableAntiAliasing(g2);
-				g2.drawString(_currentMessage, UI.WINDOW_WIDTH / 2 - _currentMessage.length() * 7 - UI.PADDING * 2, 
-						UI.PADDING * 2);
-			}
-			
 			if (!alreadyDrawn) {
 				int state = 0; //object is inactive
 				if (s.equals(_activeShape)) state = 1; //object is currently active
 				s.draw(g2, state, s.equals(_preliminaryPlacing));
 			}
 		}
+		
+		for (Shape s : _onScreenShapes) {
+			if (s.getType().equals("Object")) {
+				((ObjectShape) s).drawName(g2);
+			} else {
+				((VariableShape) s).drawName(g2);
+			}
+		}
+		
+		//display message
+		if (_messageTimer > 0) {
+			
+			double x = UI.WINDOW_WIDTH / 2 - _currentMessage.length() * 7 - UI.PADDING * 2;
+			double y = (float) UI.PADDING * 1.75;
+			
+			FontMetrics fm = g2.getFontMetrics();
+			Rectangle2D rect = fm.getStringBounds(_currentMessage, g2);
 
+			g2.setColor(UIManager.getColor("Panel.background"));
+			g2.fillRect((int) x, (int) y - fm.getAscent(), (int) rect.getWidth(), (int) rect.getHeight());
+
+			g2.setColor(Color.RED);
+			UI.enableAntiAliasing(g2);
+			g2.drawString(_currentMessage, (int) x, (int) y);
+		}
+		
 		super.paint(g); //draw the JComponents last
 	}
 
