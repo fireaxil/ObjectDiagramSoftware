@@ -49,6 +49,7 @@ public class CodeGenerator {
 		for(int i = 0; i< _classes.size(); i++){
 			code.add(classes.get(i));
 		}
+		code.add(generateMain());
 		return code;
 	}
 
