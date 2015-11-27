@@ -49,6 +49,8 @@ public class CodeGenerator {
 		for(int i = 0; i< _classes.size(); i++){
 			code.add(classes.get(i));
 		}
+		
+		code.add(generateMain());
 		return code;
 	}
 
@@ -221,13 +223,15 @@ public class CodeGenerator {
 
 							//finishing off with some association relationships
 							if (caseString.equals("Last Order Singular")) {
+								System.out.println("HIT");
 								ending += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "(";
 
 								for (VirtualInstanceVariable iv : o.getInstanceVariables()) {
 
 									if (iv.getTarget() == null) {
 										ending += "null, ";	
-									} else {
+									} 
+									else {
 										ending += objectMap.get(iv.getTarget()) + ", ";
 									}
 								}
@@ -275,7 +279,7 @@ public class CodeGenerator {
 		return _cases;
 	}
 
-	public static void main(String[] args){
+	/*public static void main(String[] args){
 
 		CodeGenerator c = null;
 
@@ -299,8 +303,9 @@ public class CodeGenerator {
 
 
 
-		System.out.print(a.toString());
-		System.out.println(c.generateMain());
-	}
+		
+		a.add(c.generateMain());
+		System.out.println(a.toString());
+	}*/
 
 }
