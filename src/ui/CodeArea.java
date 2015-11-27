@@ -38,16 +38,22 @@ public class CodeArea extends JPanel implements Observer {
 		selectorPanel.add(selectorLabel);
 		
 		ArrayList<String> files = _cgn.generate();
-		String temp = files.get(1);
-		files.set(1, files.get(0));
-		files.set(0, temp);
+		
+
 		String[] fileSwitcher = new String[files.size()];
 		for(int i = 0; i < files.size(); i++){
 			if(i == files.size()-1){
 				fileSwitcher[i] = "Driver";
 			}
 			else{
-				fileSwitcher[i] = dataset.MasterSet.classNames[i];
+				for(int y = 0; y< files.get(i).length(); y ++){
+					if(files.get(i).charAt(y) == '{'){
+						fileSwitcher[i] = files.get(i).substring(13, y);
+						break;
+					}
+				}
+				
+				
 			}
 		}
 		_classFileSelector = new JComboBox<String>(fileSwitcher);
