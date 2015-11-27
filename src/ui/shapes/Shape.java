@@ -2,9 +2,13 @@ package ui.shapes;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
+
+import javax.swing.UIManager;
 
 import ui.UI;
 
@@ -32,6 +36,8 @@ public abstract class Shape {
 
 	public void draw(Graphics2D g2, int state, boolean preliminary) {
 
+		UI.enableAntiAliasing(g2);
+
 		if (state == 0) {
 			g2.setColor(Color.BLACK); //inactive
 		} else if (state == 1) {
@@ -58,6 +64,19 @@ public abstract class Shape {
 		g2.setStroke(solid);
 	}
 
+	public void drawName(Graphics2D g2, float x, float y) {
+
+		//http://stackoverflow.com/questions/6416201/how-to-draw-string-with-background-on-graphics
+		FontMetrics fm = g2.getFontMetrics();
+		Rectangle2D rect = fm.getStringBounds(_name, g2);
+
+		g2.setColor(UIManager.getColor("Panel.background"));
+		g2.fillRect((int) x, (int) y - fm.getAscent(), (int) rect.getWidth(), (int) rect.getHeight());
+
+		g2.setColor(Color.BLUE);
+		g2.drawString(_name, x, y);
+	}
+
 	public boolean isTouching(Shape s) {
 
 		if (!this.equals(s)) {
@@ -72,7 +91,7 @@ public abstract class Shape {
 					return true;
 				}
 			}
-			
+
 			if (!this.getType().equals(s.getType())) {
 				if (distance <= (ObjectShape.RADIUS + VariableShape.SIDE / 2)) {
 					return true;

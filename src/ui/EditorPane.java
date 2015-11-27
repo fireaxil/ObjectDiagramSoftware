@@ -4,6 +4,7 @@ import java.awt.AWTException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -17,6 +18,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -38,10 +40,16 @@ public class EditorPane extends JLayeredPane {
 	private ArrayList<Shape> _onScreenShapes;
 	private Shape _activeShape;
 
+	private VariableShape _activeReferenceOrigin;
+	private VariableShape _cancelBox;
+	
+	private String _currentMessage;
+	private int _messageTimer;
+	
 	private DragHandler _drag;
 	private boolean _dragging;
 
-	Timer _t;
+	private Timer _t;
 	private Shape _preliminaryPlacing;
 
 	private static int BUTTON_SIZE = 45;
@@ -54,9 +62,7 @@ public class EditorPane extends JLayeredPane {
 
 		setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));
 
-		_objectButton = new EditButton(UI.PADDING / 2, UI.PADDING / 2);
-		//add image icon
-		_objectButton.setText("O");
+		_objectButton = new EditButton(UI.PADDING / 2, UI.PADDING / 2, "Object");
 		add(_objectButton);
 		_objectButton.addActionListener(new ActionListener() {
 			@Override
@@ -65,14 +71,16 @@ public class EditorPane extends JLayeredPane {
 			}
 		});
 
-		_referenceButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 2 + BUTTON_SIZE);
-		//add image icon
-		_referenceButton.setText("R");
+		_referenceButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 2 + BUTTON_SIZE, "Reference");
 		add(_referenceButton);
+		_referenceButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				createReference();
+			}
+		});
 
-		_variableButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 3 + BUTTON_SIZE * 2);
-		//add image icon
-		_variableButton.setText("V");
+		_variableButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 3 + BUTTON_SIZE * 2, "Variable");
 		add(_variableButton);
 		_variableButton.addActionListener(new ActionListener() {
 			@Override
@@ -81,10 +89,8 @@ public class EditorPane extends JLayeredPane {
 			}
 		});
 
-		_nameButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 4 + BUTTON_SIZE * 3);
+		_nameButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 4 + BUTTON_SIZE * 3, "Rename");
 		add(_nameButton);
-		//image icon
-		_nameButton.setText("N");
 		//creates a name editor window which auto-disposes once enter is pressed
 		_nameButton.addActionListener(new ActionListener() {
 			@Override
@@ -106,9 +112,7 @@ public class EditorPane extends JLayeredPane {
 			}
 		});
 
-		_deleteButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 5 + BUTTON_SIZE * 4);
-		//add image icon
-		_deleteButton.setText("D");
+		_deleteButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 5 + BUTTON_SIZE * 4, "Delete");
 		add(_deleteButton);
 		_deleteButton.addActionListener(new ActionListener() {
 			@Override
@@ -121,6 +125,7 @@ public class EditorPane extends JLayeredPane {
 		});
 
 		_onScreenShapes = new ArrayList<Shape>();
+		_activeReferenceOrigin = null;
 
 		addMouseListener(new MouseHandler());
 
@@ -133,6 +138,9 @@ public class EditorPane extends JLayeredPane {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				repaint();
+				if (_messageTimer > 0) {
+					_messageTimer--;
+				}
 			}
 		});
 		_t.start();
@@ -146,8 +154,6 @@ public class EditorPane extends JLayeredPane {
 		_onScreenShapes.add(o);
 		_activeShape = o;
 		_preliminaryPlacing = o;
-
-		repaint();
 	}
 
 	private void createNewVariable() {
@@ -155,8 +161,31 @@ public class EditorPane extends JLayeredPane {
 		_onScreenShapes.add(v);
 		_activeShape = v;
 		_preliminaryPlacing = v;
-
-		repaint();
+	}
+	
+	private void createReference() {
+		if (_activeShape != null && "Variable".equals(_activeShape.getType())) {
+			
+			//ensure that the selected variable is contained by an object
+			boolean isContained = false;
+			for (Shape s : _onScreenShapes) {
+				if (s.getType().equals("Object")) {
+					if (((ObjectShape) s).isParentTo((VariableShape) _activeShape)) {
+						isContained = true;
+						((VariableShape) _activeShape)._reference = null;
+					}
+				}
+			}
+			
+			//only begin targeting if the variable is contained
+			if (isContained) {
+				_activeReferenceOrigin = (VariableShape) _activeShape;
+			} else {
+				displayMessage("Please select a variable contained in an object.");
+			}
+		} else {
+			displayMessage("Please select a variable contained in an object.");
+		}
 	}
 
 	private void mouseDown(int x, int y) {
@@ -178,11 +207,21 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 			_activeShape = runningMin;
+			if (_activeShape != null) {
+				if (_activeReferenceOrigin != null) {
+					if (_activeShape.getType().equals("Object")) {
+						_activeReferenceOrigin._reference = (ObjectShape) _activeShape;
+						_activeReferenceOrigin = null;
+					}
+				}
+			}
+			
+			
 			_preliminaryPlacing = null;
 
 		} else {
 			//Throw some sort of GUI error dialog
-			System.err.println("Drop shape in a free space!");
+			displayMessage("Drop shape on a free space!");
 		}
 
 		repaint();
@@ -236,6 +275,8 @@ public class EditorPane extends JLayeredPane {
 				if (checkSuperImposition()) {
 					_activeShape.setX(tempX);
 					_activeShape.setY(tempY);
+					
+					displayMessage("You cannot superimpose objects!");
 
 					try {
 						Robot r = new Robot();
@@ -248,6 +289,7 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		}
+		
 		repaint();
 	}
 
@@ -271,10 +313,17 @@ public class EditorPane extends JLayeredPane {
 
 		repaint();
 	}
+	
+	public void displayMessage(String s) {
+		_currentMessage = s;
+		_messageTimer = 150;
+	}
 
 	//properly remove all defunct shapes
 	private void garbageCollect() {
 
+		ArrayList<Shape> variables = new ArrayList<Shape>();
+		
 		Iterator<Shape> i = _onScreenShapes.iterator();
 		while (i.hasNext()) {
 
@@ -293,6 +342,16 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		}
+		
+		for (Shape s : _onScreenShapes) {
+			if (s.getType().equals("Variable")) {
+				VariableShape v = (VariableShape) s;
+				if (!_onScreenShapes.contains(v._reference)) {
+					v._reference = null;
+				}
+			}
+		}
+		
 		repaint();
 	}
 
@@ -338,23 +397,104 @@ public class EditorPane extends JLayeredPane {
 					alreadyDrawn = true;
 				}
 			}
-
+			
+			//display targeting arrow
+			if (_activeReferenceOrigin != null) {
+				Reference r = new Reference(g2, 15, 2.0f);
+				r.drawArrow(_activeReferenceOrigin, 
+						new ObjectShape(_drag.getCurrentLocation().getX(),  _drag.getCurrentLocation().getY()), true);
+				
+				if (s.getType().equals("Object")) {
+					if (s.contains(_drag.getCurrentLocation().getX(), _drag.getCurrentLocation().getY())) {
+						s.draw(g2, 2, false);
+						alreadyDrawn = true;
+					}
+				}
+			}
+			
+			//display reference arrow
+			if (s.getType().equals("Variable")) {
+				VariableShape ov = (VariableShape) s;
+				if (ov._reference != null) {
+					Reference r = new Reference(g2, 15, 2.0f);
+					r.drawArrow(ov, ov._reference, false);
+				}
+			}
+			
 			if (!alreadyDrawn) {
 				int state = 0; //object is inactive
 				if (s.equals(_activeShape)) state = 1; //object is currently active
 				s.draw(g2, state, s.equals(_preliminaryPlacing));
 			}
 		}
+		
+		for (Shape s : _onScreenShapes) {
+			if (s.getType().equals("Object")) {
+				((ObjectShape) s).drawName(g2);
+			} else {
+				((VariableShape) s).drawName(g2);
+			}
+		}
+		
+		//display message
+		if (_messageTimer > 0) {
+			
+			double x = UI.WINDOW_WIDTH / 2 - _currentMessage.length() * 7 - UI.PADDING * 2;
+			double y = (float) UI.PADDING * 1.75;
+			
+			FontMetrics fm = g2.getFontMetrics();
+			Rectangle2D rect = fm.getStringBounds(_currentMessage, g2);
 
+			g2.setColor(UIManager.getColor("Panel.background"));
+			g2.fillRect((int) x, (int) y - fm.getAscent(), (int) rect.getWidth(), (int) rect.getHeight());
 
+			g2.setColor(Color.RED);
+			UI.enableAntiAliasing(g2);
+			g2.drawString(_currentMessage, (int) x, (int) y);
+		}
+		
 		super.paint(g); //draw the JComponents last
 	}
 
 	private class EditButton extends JButton {
 
-		public EditButton(int x, int y) {
+		String _type;
+		
+		public EditButton(int x, int y, String type) {
 			super();
 			UI.formatJComponent(this, new Dimension(BUTTON_SIZE, BUTTON_SIZE), x, y);
+			_type = type;
+		}
+		
+		@Override
+		public void paintComponent(Graphics g) {
+			
+			super.paintComponent(g);
+			
+			Graphics2D g2 = (Graphics2D) g;
+			UI.enableAntiAliasing(g2);
+			
+			//draw circle
+			if (_type.equals("Object")) {
+				BasicStroke solid = new BasicStroke(1.75f);
+				g2.setStroke(solid);
+				g2.draw(new Ellipse2D.Double(BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.5, BUTTON_SIZE * 0.5));
+			}
+			
+			//draw square
+			if (_type.equals("Variable")) {
+				BasicStroke solid = new BasicStroke(1.75f);
+				g2.setStroke(solid);
+				g2.draw(new Rectangle2D.Double(BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.5, BUTTON_SIZE * 0.5));
+			}
+			
+			//draw arrow
+			if (_type.equals("Reference")) {
+				Reference r = new Reference(g2, 10, 1.75f);
+				r.drawArrow(new VariableShape(BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.75), 
+						new ObjectShape(BUTTON_SIZE * 0.75,  BUTTON_SIZE * 0.25), true);
+			}
+			
 		}
 	}
 

@@ -2,7 +2,9 @@ package ui;
 
 import java.awt.AlphaComposite;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.util.ArrayList;
 
 import javax.swing.*;
@@ -35,6 +37,13 @@ public class UI implements Runnable {
 		//http://www.javaworld.com/article/2076733/java-se/antialiasing--images--and-alpha-compositing-in-java-2d.html?page=2
 		AlphaComposite a = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
 		return a;
+	}
+	
+	public static void enableAntiAliasing(Graphics2D g2) {
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+		RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+		RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 	}
 
 	@Override
