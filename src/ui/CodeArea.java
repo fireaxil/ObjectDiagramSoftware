@@ -38,13 +38,22 @@ public class CodeArea extends JPanel implements Observer {
 		selectorPanel.add(selectorLabel);
 		
 		ArrayList<String> files = _cgn.generate();
+		
+
 		String[] fileSwitcher = new String[files.size()];
 		for(int i = 0; i < files.size(); i++){
 			if(i == files.size()-1){
 				fileSwitcher[i] = "Driver";
 			}
 			else{
-				fileSwitcher[i] = dataset.MasterSet.classNames[i];
+				for(int y = 0; y< files.get(i).length(); y ++){
+					if(files.get(i).charAt(y) == '{'){
+						fileSwitcher[i] = files.get(i).substring(13, y);
+						break;
+					}
+				}
+				
+				
 			}
 		}
 		_classFileSelector = new JComboBox<String>(fileSwitcher);
@@ -54,14 +63,14 @@ public class CodeArea extends JPanel implements Observer {
 		selectorPanel.add(_classFileSelector);
 		
 		// ***** SET UP CODE VIEWER *****
-		JScrollPane scrollPane = new JScrollPane();
+		_codeView = new JTextArea();
+		_codeView.setEditable(false
+				);
+		JScrollPane scrollPane = new JScrollPane(_codeView);
 		UI.formatJComponent(scrollPane, new Dimension(UI.WINDOW_WIDTH / 2 - UI.PADDING * 2, 
 				_ui.getPaneHeight() - SELECTOR_PANEL_HEIGHT - UI.PADDING * 3), 
 				UI.PADDING, SELECTOR_PANEL_HEIGHT + UI.PADDING * 2);
 		add(scrollPane);
-		
-		_codeView = new JTextArea();
-		scrollPane.add(_codeView);
 		
 		_classFileSelector.addActionListener(new ActionListener(){
 
@@ -69,17 +78,13 @@ public class CodeArea extends JPanel implements Observer {
 			public void actionPerformed(ActionEvent e) {
 				
 				JComboBox jcb = (JComboBox)e.getSource();
-				
 				int index = jcb.getSelectedIndex();
-				System.out.println(_codeView.getText());
+				_codeView.setText(files.get(index));
 				
-				System.out.println(files.get(index));
 			}
 			
 		});
-		add(_codeView);
-		
-		//_ui.getModel().addObserver(this);
+
 	}
 
 	@Override
