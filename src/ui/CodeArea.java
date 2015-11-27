@@ -38,6 +38,9 @@ public class CodeArea extends JPanel implements Observer {
 		selectorPanel.add(selectorLabel);
 		
 		ArrayList<String> files = _cgn.generate();
+		String temp = files.get(1);
+		files.set(1, files.get(0));
+		files.set(0, temp);
 		String[] fileSwitcher = new String[files.size()];
 		for(int i = 0; i < files.size(); i++){
 			if(i == files.size()-1){
@@ -54,14 +57,14 @@ public class CodeArea extends JPanel implements Observer {
 		selectorPanel.add(_classFileSelector);
 		
 		// ***** SET UP CODE VIEWER *****
-		JScrollPane scrollPane = new JScrollPane();
+		_codeView = new JTextArea();
+		_codeView.setEditable(false
+				);
+		JScrollPane scrollPane = new JScrollPane(_codeView);
 		UI.formatJComponent(scrollPane, new Dimension(UI.WINDOW_WIDTH / 2 - UI.PADDING * 2, 
 				_ui.getPaneHeight() - SELECTOR_PANEL_HEIGHT - UI.PADDING * 3), 
 				UI.PADDING, SELECTOR_PANEL_HEIGHT + UI.PADDING * 2);
 		add(scrollPane);
-		
-		_codeView = new JTextArea();
-		scrollPane.add(_codeView);
 		
 		_classFileSelector.addActionListener(new ActionListener(){
 
@@ -69,19 +72,13 @@ public class CodeArea extends JPanel implements Observer {
 			public void actionPerformed(ActionEvent e) {
 				
 				JComboBox jcb = (JComboBox)e.getSource();
-				
 				int index = jcb.getSelectedIndex();
-				
-				
-				//System.out.println(files.get(index));
-				System.out.println(files.toString());
+				_codeView.setText(files.get(index));
 				
 			}
 			
 		});
-		add(_codeView);
-		
-		//_ui.getModel().addObserver(this);
+
 	}
 
 	@Override

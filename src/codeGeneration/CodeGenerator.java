@@ -223,13 +223,15 @@ public class CodeGenerator {
 
 							//finishing off with some association relationships
 							if (caseString.equals("Last Order Singular")) {
+								System.out.println("HIT");
 								ending += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "(";
 
 								for (VirtualInstanceVariable iv : o.getInstanceVariables()) {
 
 									if (iv.getTarget() == null) {
 										ending += "null, ";	
-									} else {
+									} 
+									else {
 										ending += objectMap.get(iv.getTarget()) + ", ";
 									}
 								}
