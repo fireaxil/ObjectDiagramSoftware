@@ -34,8 +34,9 @@ public class EditorPane extends JLayeredPane {
 	EditButton _objectButton;
 	EditButton _referenceButton;
 	EditButton _variableButton;
-	EditButton _deleteButton;
 	EditButton _nameButton;
+	EditButton _deleteButton;
+	EditButton _checkButton;
 
 	private ArrayList<Shape> _onScreenShapes;
 	private Shape _activeShape;
@@ -123,7 +124,17 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		});
-
+		
+		_checkButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 6 + BUTTON_SIZE * 5, "Check");
+		add(_checkButton);
+		_checkButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//have the model check the current solution
+				_ui.getModel().checkSolution(_onScreenShapes);
+			}
+		});
+		
 		_onScreenShapes = new ArrayList<Shape>();
 		_activeReferenceOrigin = null;
 

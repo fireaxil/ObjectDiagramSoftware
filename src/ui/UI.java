@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 
+import model.Model;
+
 
 public class UI implements Runnable {
 	
@@ -20,11 +22,11 @@ public class UI implements Runnable {
 	private JFrame _window;
 	private JLayeredPane _mainContentPane;
 	
-//	private Model _model;
+	private Model _model;
 	
 	public UI() {
 		
-		
+		_model = new Model(this);
 		
 	}
 
@@ -72,6 +74,10 @@ public class UI implements Runnable {
 		_mainContentPane.add(edit);
 		
 	}	
+	
+	public Model getModel() {
+		return _model;
+	}
 	
 	public int getPaneHeight() {
 		return _paneHeight;

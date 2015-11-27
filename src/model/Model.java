@@ -1,5 +1,6 @@
 package model;
 
+import ui.shapes.Shape;
 import java.util.ArrayList;
 
 import codeGeneration.*;
@@ -16,10 +17,6 @@ import ui.UI;
    		ArrayList<String[]> such that each String contains:
    		
    				{ CLASSNAME, CLASS CODE }
-   				
-   We should retain _masterSet so that whenever the UI calls checkSolution(), we can instantiate a
-   SolutionChecker and pass in _masterSet. Then we could call a solutionIsValid method on 
-   the temporary SolutionChecker object, and pass that boolean result along to the UI.
   
  */
 
@@ -59,8 +56,10 @@ public class Model {
 		return null;
 	}
 	
-	public boolean checkSolution() {
-		
-		return false;
+	/* essentially a wrapper method for the sake of encapsulating model functionality 
+	(besides, only the model should have access to the masterset) */
+	public boolean checkSolution(ArrayList<Shape> shapes) {
+		System.out.println("Checking Solution...");
+		return SolutionChecker.checkSolution(shapes, _masterSet);
 	}
 }
