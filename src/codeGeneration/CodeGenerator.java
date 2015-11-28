@@ -3,6 +3,7 @@ package codeGeneration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import dataset.*;
 
@@ -17,7 +18,10 @@ public class CodeGenerator {
 
 	private MasterSet _masterSet;
 
-	private ArrayList<String> _cases;
+	/* we must use a hash set, because a list keeping track of all the cases present in this particular generation
+	  must not contain duplicates */ 
+	private HashSet<String> _cases;
+	
 	private HashMap<String, String> _caseMapping;
 	private HashMap<String, Integer> _caseOrder;
 
@@ -28,7 +32,7 @@ public class CodeGenerator {
 		_numInstanceVars = numInstanceVars;
 		
 		//initialize these for later use
-		_cases = new ArrayList<String>();
+		_cases = new HashSet<String>();
 		_masterSet = new MasterSet();
 		_caseMapping = new HashMap<String, String>();
 
@@ -176,30 +180,58 @@ public class CodeGenerator {
 
 	public String generateMain(){
 
-		// *** GENERATE VARIABLE INSTANTIATIONS ***
-
-		String header = "public class Driver {\n\t public static void main(String[] args) {\n\n ";
+		String header = "public class Driver {\n\n\t public static void main(String[] args) {\n\n ";
+		
+		//a hash set does not maintain order, must switch to array list
+		ArrayList<String> orderedCases = new ArrayList<String>();
+		for (String s : _cases) {
+			orderedCases.add(s);
+		}
 
 		//reorder cases
 		int smallestSoFar;
-		for (int i = 0; i < _cases.size(); i++) {
+		for (int i = 0; i < orderedCases.size(); i++) {
 			smallestSoFar = i;
-			for (int j = i; j < _cases.size(); j++) {
-				if (_caseOrder.get(_cases.get(j)) < _caseOrder.get(_cases.get(smallestSoFar))) {
+			for (int j = i; j < orderedCases.size(); j++) {
+				if (_caseOrder.get(orderedCases.get(j)) < _caseOrder.get(orderedCases.get(smallestSoFar))) {
 					smallestSoFar = j;
 				}
 			}
-			Collections.swap(_cases, i, smallestSoFar);
+			Collections.swap(orderedCases, i, smallestSoFar);
 		}
+		
+		System.out.println(orderedCases);
 
-		String beginning = "\t\t";
+		String beginning = "";
 		String ending = "";
 		String dualCleanup = "";
-
+		
+		// ***** GENERATING VARIABLE INSTANTIATIONS *****	
+		
+		int varCount = 0;
+		
 		// <object, varName>
 		HashMap<VirtualObject, String> objectMap = new HashMap<VirtualObject, String>();
-
-		// frankenstein's loop went here
+		
+		System.out.println("Size of instances: " + _instances.size());
+		
+		//print assignment statements in their proper case order
+		for (String currentCase : _cases) {
+			
+			//create the proper assignment statement for each object whose class conforms to the current case
+			for (VirtualObject currentObject : _instances) {
+				
+				//check class conformity to the current case
+				if (_caseMapping.get(currentObject.getTypeName()).equals(currentCase)) {
+					
+					if (currentCase.equals("First Order Singular")) {
+						String type = currentObject.getTypeName();
+						beginning += "\t\t" + type + " " + getChar(varCount) + " = new " + type + "();\n";
+						varCount++;
+					}
+				}
+			}
+		}
 
 		return header + beginning + ending + dualCleanup + "\n\t}\n}";
 	}
@@ -208,7 +240,7 @@ public class CodeGenerator {
 		return Character.toString((char)('a' + charNumber));
 	}
 
-	public ArrayList<String> getCases() {
+	public HashSet<String> getCases() {
 		return _cases;
 	}
 	
