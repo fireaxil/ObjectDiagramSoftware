@@ -85,7 +85,9 @@ public class CodeGenerator {
 			
 			//recursive case
 			CodeGenerator cg = new CodeGenerator(_numClasses, _numObjects, _numInstanceVars);
-			return cg.generate();
+			ArrayList<String> result = cg.generate();
+			_masterSet = cg.getMasterSet();
+			return result;
 			
 		}
 	}

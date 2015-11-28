@@ -60,6 +60,12 @@ public class Model {
 	(besides, only the model should have access to the masterset) */
 	public boolean checkSolution(ArrayList<Shape> shapes) {
 		System.out.println("Checking Solution...");
-		return SolutionChecker.checkSolution(shapes, _masterSet);
+		
+		if (_codeGenerator == null) {
+			System.err.println("Error: code has not yet been generated.");
+			return false;
+		} else {
+			return SolutionChecker.checkSolution(shapes, _codeGenerator.getMasterSet());
+		}
 	}
 }
