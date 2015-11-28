@@ -210,13 +210,16 @@ public class CodeGenerator {
 		
 		int varCount = 0;
 		
-		// <object, varName>
+		// <object, varName> Maps the local variable created below to the object to which it refers
 		HashMap<VirtualObject, String> objectMap = new HashMap<VirtualObject, String>();
 		
 		System.out.println("Size of instances: " + _instances.size());
 		
+		ArrayList<VirtualObject> dualSetters = new ArrayList<VirtualObject>();
+		ArrayList<VirtualObject> lastOrderAssignments = new ArrayList<VirtualObject>();
+		
 		//print assignment statements in their proper case order
-		for (String currentCase : _cases) {
+		for (String currentCase : orderedCases) {
 			
 			//create the proper assignment statement for each object whose class conforms to the current case
 			for (VirtualObject currentObject : _instances) {
@@ -224,20 +227,72 @@ public class CodeGenerator {
 				//check class conformity to the current case
 				if (_caseMapping.get(currentObject.getTypeName()).equals(currentCase)) {
 					
+					String type = currentObject.getTypeName();
+					
 					if (currentCase.equals("First Order Singular") || currentCase.equals("Free Case")) {
-						String type = currentObject.getTypeName();
+						
 						beginning += "\t\t" + type + " " + getChar(varCount) + " = new " + type + "();\n";
 						varCount++;
+						
 					}
 					
-					if (currentCase.equals("Dual Restrictive")) {
+					if (currentCase.equals("Dual Restrictive Case")) {
+						
+						beginning += "\t\t" + type + " " + getChar(varCount) + " = new " + type + "();\n"; 
+						
+						//these can only be safely written after all firsts and duals have been instantiated and assigned
+						dualSetters.add(currentObject);
+						objectMap.put(currentObject, getChar(varCount));
+						
+						varCount++;
+						
+					}
+					
+					if (currentCase.equals("Last Order Singular")) {
+						
+						//these must be written after all firsts have been instantiated and assigned
+						lastOrderAssignments.add(currentObject);
 						
 					}
 				}
 			}
 		}
-
-		return header + beginning + ending + dualCleanup + "\n\t}\n}";
+		
+		//set all the variables for each dual restrictive object
+		for (VirtualObject o : dualSetters) {
+			
+			String currentName = objectMap.get(o);
+			
+			//set each individual variable
+			for (VirtualInstanceVariable v : o.getInstanceVariables()) {
+				
+				dualCleanup += "\t\t" + currentName + ".set" + v.getName() + "(" + objectMap.get(v.getTarget()) + ")\n";
+				
+			}
+		}
+		
+		//instantiate all the last orders and pass in what their instance variables hold
+		for (VirtualObject o : lastOrderAssignments) {
+			
+			ending += "\t\t" + o.getTypeName() + " " + getChar(varCount) + " = new " + o.getTypeName() + "(";
+			
+			//now we have to iterate for each instance variable that needs its corresponding argument
+			for (int i = 0; i < o.getInstanceVariables().size(); i++) {
+				
+				VirtualInstanceVariable v = o.getInstanceVariables().get(i);
+				
+				ending += objectMap.get(v.getTarget());
+				if (i == o.getInstanceVariables().size() - 1) {
+					ending += ");\n";
+				} else {
+					ending += ", ";
+				}
+			}
+			
+			varCount++;
+		}
+		
+		return header + beginning + dualCleanup + ending + "\n\t}\n}";
 	}
 
 	public String getChar(int charNumber){
@@ -262,20 +317,26 @@ public class CodeGenerator {
 		CodeGenerator c = null;
 
 		ArrayList<String> a = null;
+		
 		boolean first = false;
-		boolean second = false;
+		boolean last = false;
+		boolean dual = false;
 
-		while (!(first && second)) {
+		//the code generation must represent each of these cases
+		while (!(first && dual && last)) {
+			
+			first = false;
+			last = false;
+			dual = false;
+			
 			c = new CodeGenerator(4,8,3);
 			a = c.generate();
 			for (String s : c.getCases()) {
-				if (s.equals("First Order Singular")) {
-					first = true;
-				}
-
-				if (s.equals("Last Order Singular")) {
-					second = true;
-				}
+				
+				if (s.equals("First Order Singular")) first = true;
+				if (s.equals("Dual Restrictive Case")) dual = true;
+				if (s.equals("Last Order Singular")) last = true;
+				
 			}
 		}
 
