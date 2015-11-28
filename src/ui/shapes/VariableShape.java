@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
+import dataset.VirtualClass;
 import ui.UI;
 
 public class VariableShape extends Shape {
@@ -84,5 +85,9 @@ public class VariableShape extends Shape {
 	@Override
 	public boolean isDefunct() {
 		return _defunct;
+	}
+
+	public ObjectShape getReference() {
+		return _reference;
 	}
 }

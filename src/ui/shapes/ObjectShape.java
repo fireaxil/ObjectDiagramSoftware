@@ -119,4 +119,8 @@ public class ObjectShape extends Shape {
 	public boolean isDefunct() {
 		return _defunct;
 	}
+	
+	public ArrayList<VariableShape> getInstanceVariables(){
+		return _instanceVariables;
+	}
 }
