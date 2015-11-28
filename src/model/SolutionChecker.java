@@ -21,7 +21,7 @@ import ui.shapes.VariableShape;
 
 public class SolutionChecker {
 
-	public static boolean checkSolution(ArrayList<Shape> shapes, MasterSet set) {
+	public static boolean checkSolution(ArrayList<Shape> shapes, MasterSet set, HashMap<String, ArrayList<String[]>> locals) {
 
 		ArrayList<VirtualClass> classes = set.getClasses();
 		ArrayList<VirtualObject> instances = set.getObjects();

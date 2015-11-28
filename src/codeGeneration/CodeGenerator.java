@@ -26,7 +26,7 @@ public class CodeGenerator {
 	private HashMap<String, Integer> _caseOrder;
 	
 	//keeps track of what generate local variables have what instance variables
-	private ArrayList<String> localVars;
+	private HashMap<String, ArrayList<String[]>> _localVars;
 
 	public CodeGenerator(int numClasses, int numObjects, int numInstanceVars){
 		
@@ -38,6 +38,7 @@ public class CodeGenerator {
 		_cases = new HashSet<String>();
 		_masterSet = new MasterSet();
 		_caseMapping = new HashMap<String, String>();
+		_localVars = new HashMap<String, ArrayList<String[]>>();
 
 		//made each case with the order the assignment statements are to appear in the main
 		_caseOrder = new HashMap<String, Integer>();
@@ -79,6 +80,7 @@ public class CodeGenerator {
 			
 			//base case
 			_masterSet.output();
+			outputLocalVars();
 			return code;
 		
 		} else {
@@ -86,7 +88,11 @@ public class CodeGenerator {
 			//recursive case
 			CodeGenerator cg = new CodeGenerator(_numClasses, _numObjects, _numInstanceVars);
 			ArrayList<String> result = cg.generate();
+			
+			//we need to set the top level instances vars to those of the base instance, which have the correct info 
 			_masterSet = cg.getMasterSet();
+			_localVars = cg.getLocalVars();
+			
 			return result;
 			
 		}
@@ -305,6 +311,7 @@ public class CodeGenerator {
 		for (VirtualObject o : lastOrderAssignments) {
 			
 			ending += "\t\t" + o.getTypeName() + " " + getChar(varCount) + " = new " + o.getTypeName() + "(";
+			objectMap.put(o, getChar(varCount));
 			
 			//now we have to iterate for each instance variable that needs its corresponding argument
 			for (int i = 0; i < o.getInstanceVariables().size(); i++) {
@@ -322,7 +329,52 @@ public class CodeGenerator {
 			varCount++;
 		}
 		
+		for (int i = 0; i < varCount; i++) {
+			trackLocalVariable(i, objectMap);
+		}
+		
 		return header + beginning + dualCleanup + ending + "\n\t}\n}";
+	}
+	
+	/* FORMAT:
+	 * 
+	 *  a --> | _a --> c |
+	 * 		  | _b --> d |
+	 * 
+	 *  c --> | _e --> null |
+	 *  	  | _g --> a    |
+	 * 
+	 */
+	
+	private void trackLocalVariable(int varCount, HashMap<VirtualObject, String> objectMap) {
+		
+		ArrayList<String[]> instanceVars = new ArrayList<String[]>();
+		
+		VirtualObject result = null;
+		for (VirtualObject o : _instances) {
+			
+			//find the object that corresponds to this char
+			if (objectMap.get(o).equals(getChar(varCount))) {
+				result = o;
+				break;
+			}
+		}
+		
+		boolean added = false;
+		for (VirtualInstanceVariable v : result.getInstanceVariables()) {
+			String[] s = new String[2];
+			s[0] = v.getName();
+			s[1] = objectMap.get(v.getTarget());
+			instanceVars.add(s);
+			added = true;
+		}
+		
+		if (!added) {
+			String[] s = {"", ""};
+			instanceVars.add(s);
+		}
+		
+		_localVars.put(getChar(varCount), instanceVars);
 	}
 
 	public String getChar(int charNumber){
@@ -336,5 +388,29 @@ public class CodeGenerator {
 	//should probably return a deep copy, just to be safe
 	public MasterSet getMasterSet() {
 		return _masterSet;
+	}
+	
+	public HashMap<String, ArrayList<String[]>> getLocalVars() {
+		return _localVars;
+	}
+	
+	public void outputLocalVars() {
+		
+		for (int i = 0; i < _localVars.size(); i++) {
+			
+			char c = (char) (i + 'a');
+			String s = c + "";
+			
+			System.out.println("--------------------");
+			System.out.println(s + ":");
+			
+			for (String[] longString : _localVars.get(s)) {
+				if (longString[0].equals("")) {
+					System.out.println("[no instance variables]");
+				} else {
+					System.out.println("\t" + longString[0] + " --> " + longString[1]);
+				}
+			}
+		}
 	}
 }

@@ -53,7 +53,7 @@ public class Model extends Observable {
 					+ "generate a MasterSet.");
 			return false;
 		} else {
-			return SolutionChecker.checkSolution(shapes, _codeGenerator.getMasterSet());
+			return SolutionChecker.checkSolution(shapes, _codeGenerator.getMasterSet(), _codeGenerator.getLocalVars());
 		}
 	}
 }
