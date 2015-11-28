@@ -14,8 +14,8 @@ import model.Model;
 
 public class UI implements Runnable {
 	
-	public static int WINDOW_WIDTH = 1050;
-	public static int WINDOW_HEIGHT = 525;
+	public static int WINDOW_WIDTH = 1200;
+	public static int WINDOW_HEIGHT = 700;
 	private int _paneHeight;
 	public static int PADDING = 12;
 	

@@ -25,7 +25,7 @@ public class CodeArea extends JPanel implements Observer {
 		super();
 		setLayout(null);
 		_ui = ui;
-		_cgn = new codeGeneration.CodeGenerator(4,10,3);
+		_cgn = new codeGeneration.CodeGenerator(5,20,4);
 
 		// ***** SET UP CLASS FILE SELECTOR *****
 		JPanel selectorPanel = new JPanel();
