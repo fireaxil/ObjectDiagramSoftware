@@ -224,10 +224,14 @@ public class CodeGenerator {
 				//check class conformity to the current case
 				if (_caseMapping.get(currentObject.getTypeName()).equals(currentCase)) {
 					
-					if (currentCase.equals("First Order Singular")) {
+					if (currentCase.equals("First Order Singular") || currentCase.equals("Free Case")) {
 						String type = currentObject.getTypeName();
 						beginning += "\t\t" + type + " " + getChar(varCount) + " = new " + type + "();\n";
 						varCount++;
+					}
+					
+					if (currentCase.equals("Dual Restrictive")) {
+						
 					}
 				}
 			}
