@@ -78,6 +78,7 @@ public class CodeGenerator {
 		if (first && dual && last) {
 			
 			//base case
+			_masterSet.output();
 			return code;
 		
 		} else {
