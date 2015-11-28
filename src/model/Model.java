@@ -1,7 +1,11 @@
 package model;
 
 import ui.shapes.Shape;
+
 import java.util.ArrayList;
+import java.util.Observable;
+
+import javax.swing.SwingUtilities;
 
 import codeGeneration.*;
 import dataset.*;
@@ -21,39 +25,22 @@ import ui.UI;
  */
 
 
-public class Model {
+public class Model extends Observable {
 
-	private UI _ui;
 	private CodeGenerator _codeGenerator;
-	private MasterSet _masterSet;
 	
-	public Model(UI ui) {
-		_ui = ui;
-	}
-	
-	public void createNewCode() {
+	public Model() {
 		
-		_codeGenerator = new CodeGenerator(3, 10, 4);
-		
-		/*
-		 
-		 I would like to be able to call a method like this:
-		 _masterSet = _codeGenerator.getMasterSet();
-		 
-		 This assumes that _codeGenerator will generate some indeterminate number of MasterSets
-		 until it finds one that meets the appropriate conditions. It will then assign that 
-		 MasterSet to an instance variable that will be accessible here.
-		 
-		 */
-		
+		createNewCode(3, 6, 3);
 		
 	}
 	
-	public ArrayList<String[]> getCode() {
-		
-		//return _codeGenerator.getCode();
-		
-		return null;
+	public void createNewCode(int numClasses, int numObjects, int numInstanceVars) {
+		_codeGenerator = new CodeGenerator(numClasses, numObjects, numInstanceVars);
+	}
+	
+	public ArrayList<String> getCode() {
+		return _codeGenerator.generate();
 	}
 	
 	/* essentially a wrapper method for the sake of encapsulating model functionality 
@@ -62,7 +49,8 @@ public class Model {
 		System.out.println("Checking Solution...");
 		
 		if (_codeGenerator == null) {
-			System.err.println("Error: code has not yet been generated.");
+			System.err.println("Error: code has not yet been generated. Call getNewCode(...) to "
+					+ "generate a MasterSet.");
 			return false;
 		} else {
 			return SolutionChecker.checkSolution(shapes, _codeGenerator.getMasterSet());

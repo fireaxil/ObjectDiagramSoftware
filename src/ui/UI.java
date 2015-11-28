@@ -21,15 +21,11 @@ public class UI implements Runnable {
 	
 	private JFrame _window;
 	private JLayeredPane _mainContentPane;
+	private CodeArea _codeView;
+	private EditorPane _editPane;
 	
 	private Model _model;
 	
-	public UI() {
-		
-		_model = new Model(this);
-		
-	}
-
 	public static void formatJComponent(JComponent j, Dimension d, int x, int y) {
 		j.setSize(d);
 		j.setLocation(x, y);
@@ -51,6 +47,8 @@ public class UI implements Runnable {
 	@Override
 	public void run() {
 		
+		_model = new Model();
+		
 		//setting up main frame and main panel
 		_window = new JFrame("Object Diagram Analysis");
 		_mainContentPane = new JLayeredPane();
@@ -63,15 +61,17 @@ public class UI implements Runnable {
 		_paneHeight = _window.getRootPane().getHeight();
 		
 		// *** SETTING UP CODE VIEWER
-		CodeArea codeView = new CodeArea(this);
-		UI.formatJComponent(codeView, new Dimension(WINDOW_WIDTH / 2, WINDOW_HEIGHT), 0, 0);
-		_mainContentPane.add(codeView);
+		_codeView = new CodeArea(this);
+		UI.formatJComponent(_codeView, new Dimension(WINDOW_WIDTH / 2, WINDOW_HEIGHT), 0, 0);
+		_mainContentPane.add(_codeView);
 		
 		// *** SETTING UP THE DIAGRAM EDITOR
-		EditorPane edit = new EditorPane(this);
-		UI.formatJComponent(edit, new Dimension(WINDOW_WIDTH / 2 - PADDING * 2, _paneHeight - PADDING * 2), 
+		_editPane = new EditorPane(this);
+		UI.formatJComponent(_editPane, new Dimension(WINDOW_WIDTH / 2 - PADDING * 2, _paneHeight - PADDING * 2), 
 				WINDOW_WIDTH / 2 + PADDING, PADDING);
-		_mainContentPane.add(edit);
+		_mainContentPane.add(_editPane);
+		
+		_model.addObserver(_codeView);
 		
 	}	
 	
