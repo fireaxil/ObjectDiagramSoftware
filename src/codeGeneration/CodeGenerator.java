@@ -24,6 +24,9 @@ public class CodeGenerator {
 	
 	private HashMap<String, String> _caseMapping;
 	private HashMap<String, Integer> _caseOrder;
+	
+	//keeps track of what generate local variables have what instance variables
+	private ArrayList<String> localVars;
 
 	public CodeGenerator(int numClasses, int numObjects, int numInstanceVars){
 		
@@ -44,19 +47,46 @@ public class CodeGenerator {
 		_caseOrder.put("Last Order Singular", 3);
 	}
 
-	public ArrayList<String> generate(){
+	//recursive method (base case = all class case conditions are met)
+	public ArrayList<String> generate() {
+		
 		ArrayList<String> code = new ArrayList<String>();
+		
 		_masterSet.randomize(_numClasses, _numObjects, _numInstanceVars);
+		
 		_classes = _masterSet.getClasses();
 		_instances = _masterSet.getObjects();
+		//remove the null reference put in at the end
 		_instances.remove(_instances.size()-1);
+		
 		ArrayList<String> classes = createClasses(_classes);
 		for(int i = 0; i< _classes.size(); i++){
 			code.add(classes.get(i));
 		}
-
 		code.add(generateMain());
-		return code;
+		
+		boolean first = false;
+		boolean last = false;
+		boolean dual = false;
+		
+		for (String s : getCases()) {
+			if (s.equals("First Order Singular")) first = true;
+			if (s.equals("Dual Restrictive Case")) dual = true;
+			if (s.equals("Last Order Singular")) last = true;
+		}
+		
+		if (first && dual && last) {
+			
+			//base case
+			return code;
+		
+		} else {
+			
+			//recursive case
+			CodeGenerator cg = new CodeGenerator(_numClasses, _numObjects, _numInstanceVars);
+			return cg.generate();
+			
+		}
 	}
 
 	public ArrayList<String> createClasses(ArrayList<VirtualClass> classes){
@@ -199,8 +229,6 @@ public class CodeGenerator {
 			}
 			Collections.swap(orderedCases, i, smallestSoFar);
 		}
-		
-		System.out.println(orderedCases);
 
 		String beginning = "";
 		String ending = "";
@@ -213,8 +241,7 @@ public class CodeGenerator {
 		// <object, varName> Maps the local variable created below to the object to which it refers
 		HashMap<VirtualObject, String> objectMap = new HashMap<VirtualObject, String>();
 		
-		System.out.println("Size of instances: " + _instances.size());
-		
+		//to keep track of things that need to get done out of the initial loop through orderedCases
 		ArrayList<VirtualObject> dualSetters = new ArrayList<VirtualObject>();
 		ArrayList<VirtualObject> lastOrderAssignments = new ArrayList<VirtualObject>();
 		
@@ -307,49 +334,4 @@ public class CodeGenerator {
 	public MasterSet getMasterSet() {
 		return _masterSet;
 	}
-	
-	private HashMap<String, String> getCaseMapping() {
-		return _caseMapping;
-	}
-
-	public static void main(String[] args){
-
-		CodeGenerator c = null;
-
-		ArrayList<String> a = null;
-		
-		boolean first = false;
-		boolean last = false;
-		boolean dual = false;
-
-		//the code generation must represent each of these cases
-		while (!(first && dual && last)) {
-			
-			first = false;
-			last = false;
-			dual = false;
-			
-			c = new CodeGenerator(4,8,3);
-			a = c.generate();
-			for (String s : c.getCases()) {
-				
-				if (s.equals("First Order Singular")) first = true;
-				if (s.equals("Dual Restrictive Case")) dual = true;
-				if (s.equals("Last Order Singular")) last = true;
-				
-			}
-		}
-
-		//print out the contents of the final master set
-		c.getMasterSet().output();
-		
-		//print out the case of each class
-		System.out.println("\n" + c.getCaseMapping() + "\n");
-		
-		//print out all generated class definitions
-		for (String s : a) {
-			System.out.println(s + "\n");
-		}
-	}
-
 }
