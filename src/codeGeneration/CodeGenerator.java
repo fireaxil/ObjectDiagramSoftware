@@ -22,15 +22,17 @@ public class CodeGenerator {
 	private HashMap<String, Integer> _caseOrder;
 
 	public CodeGenerator(int numClasses, int numObjects, int numInstanceVars){
+		
 		_numClasses = numClasses;
 		_numObjects = numObjects;
 		_numInstanceVars = numInstanceVars;
-		_masterSet = new MasterSet();
-
+		
+		//initialize these for later use
 		_cases = new ArrayList<String>();
+		_masterSet = new MasterSet();
 		_caseMapping = new HashMap<String, String>();
 
-
+		//made each case with the order the assignment statements are to appear in the main
 		_caseOrder = new HashMap<String, Integer>();
 		_caseOrder.put("Free Case", 0);
 		_caseOrder.put("First Order Singular", 1);
@@ -41,7 +43,6 @@ public class CodeGenerator {
 	public ArrayList<String> generate(){
 		ArrayList<String> code = new ArrayList<String>();
 		_masterSet.randomize(_numClasses, _numObjects, _numInstanceVars);
-		_masterSet.output();
 		_classes = _masterSet.getClasses();
 		_instances = _masterSet.getObjects();
 		_instances.remove(_instances.size()-1);
@@ -49,7 +50,7 @@ public class CodeGenerator {
 		for(int i = 0; i< _classes.size(); i++){
 			code.add(classes.get(i));
 		}
-		
+
 		code.add(generateMain());
 		return code;
 	}
@@ -75,8 +76,6 @@ public class CodeGenerator {
 	public String createFinalCode(VirtualClass virtualClass){
 		String finalCode = "";
 		String cased = determineCase(virtualClass);
-
-		System.out.println("For " + virtualClass.getName() + ", " + "The determined case is: " + cased);
 
 		_cases.add(cased);
 		_caseMapping.put(virtualClass.getName(), cased);
@@ -200,73 +199,7 @@ public class CodeGenerator {
 		// <object, varName>
 		HashMap<VirtualObject, String> objectMap = new HashMap<VirtualObject, String>();
 
-		//instantiate classes in order
-		int charNumber = 0;
-		for (String caseString : _cases) {
-			for (VirtualClass vc : _classes) {
-				if (_caseMapping.get(vc.getName()).equals(caseString)) {
-					for (VirtualObject o : _instances) {
-						if (o.getTypeName().equals(vc.getName())) {
-
-							//first two rounds of declaration/assignment statements
-							if (caseString.equals("Free Case") || caseString.equals("First Order Singular") 
-									|| caseString.equals("Dual Restrictive Case")) {
-								beginning += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "();\n\t\t";
-
-
-
-								objectMap.put(o, getChar(charNumber));
-								charNumber++;
-							}
-
-
-
-							//finishing off with some association relationships
-							if (caseString.equals("Last Order Singular")) {
-								System.out.println("HIT");
-								ending += vc.getName() + " " + getChar(charNumber) + " = new " + vc.getName() + "(";
-
-								for (VirtualInstanceVariable iv : o.getInstanceVariables()) {
-
-									if (iv.getTarget() == null) {
-										ending += "null, ";	
-									} 
-									else {
-										ending += objectMap.get(iv.getTarget()) + ", ";
-									}
-								}
-								objectMap.put(o, getChar(charNumber));
-								ending = ending.substring(0, ending.length() - 2);
-								ending += "); \n\t\t";
-
-								charNumber++;
-							}
-						}
-					}
-				}
-			}
-		}
-		for (String caseString : _cases) {
-			for (VirtualClass vc : _classes) {
-				if (_caseMapping.get(vc.getName()).equals(caseString)) {
-					for (VirtualObject o : _instances) {
-						if (o.getTypeName().equals(vc.getName())) {
-							if(caseString.equals("Dual Restrictive Case")){
-								for(int i = 0; i < o.getInstanceVariables().size(); i ++){
-									if(o.getInstanceVariables().get(i).getTarget() != null){
-										dualCleanup += objectMap.get(o) + ".set" + o.getInstanceVariables().get(i).getName() + "(" + objectMap.get(o.getInstanceVariables().get(i).getTarget()) + ");\n";
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// *** GENERATE VARIABLE ASSIGNMENTS
-
-
+		// frankenstein's loop went here
 
 		return header + beginning + ending + dualCleanup + "\n\t}\n}";
 	}
@@ -278,8 +211,17 @@ public class CodeGenerator {
 	public ArrayList<String> getCases() {
 		return _cases;
 	}
+	
+	//should probably return a deep copy, just to be safe
+	public MasterSet getMasterSet() {
+		return _masterSet;
+	}
+	
+	private HashMap<String, String> getCaseMapping() {
+		return _caseMapping;
+	}
 
-	/*public static void main(String[] args){
+	public static void main(String[] args){
 
 		CodeGenerator c = null;
 
@@ -288,7 +230,7 @@ public class CodeGenerator {
 		boolean second = false;
 
 		while (!(first && second)) {
-			c = new CodeGenerator(4,10,3);
+			c = new CodeGenerator(4,8,3);
 			a = c.generate();
 			for (String s : c.getCases()) {
 				if (s.equals("First Order Singular")) {
@@ -301,11 +243,16 @@ public class CodeGenerator {
 			}
 		}
 
-
-
+		//print out the contents of the final master set
+		c.getMasterSet().output();
 		
-		a.add(c.generateMain());
-		System.out.println(a.toString());
-	}*/
+		//print out the case of each class
+		System.out.println("\n" + c.getCaseMapping() + "\n");
+		
+		//print out all generated class definitions
+		for (String s : a) {
+			System.out.println(s + "\n");
+		}
+	}
 
 }
