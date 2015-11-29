@@ -31,7 +31,7 @@ public class Model extends Observable {
 	
 	public Model() {
 		
-		createNewCode(3, 6, 3);
+		createNewCode(5, 15, 4);
 		
 	}
 	

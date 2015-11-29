@@ -4,6 +4,7 @@ import java.awt.AWTException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -18,6 +19,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,6 +32,7 @@ public class EditorPane extends JLayeredPane {
 
 	UI _ui;
 	EditorPane _self;
+	boolean _initialized;
 
 	EditButton _objectButton;
 	EditButton _referenceButton;
@@ -40,13 +43,14 @@ public class EditorPane extends JLayeredPane {
 
 	private ArrayList<Shape> _onScreenShapes;
 	private Shape _activeShape;
+	private float _dynamicScaling;
 
 	private VariableShape _activeReferenceOrigin;
 	private VariableShape _cancelBox;
-	
+
 	private String _currentMessage;
 	private int _messageTimer;
-	
+
 	private DragHandler _drag;
 	private boolean _dragging;
 
@@ -60,6 +64,7 @@ public class EditorPane extends JLayeredPane {
 
 		_ui = ui;
 		_self = this;
+		_dynamicScaling = 1f;
 
 		setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));
 
@@ -124,7 +129,7 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		});
-		
+
 		_checkButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 6 + BUTTON_SIZE * 5, "Check");
 		add(_checkButton);
 		_checkButton.addActionListener(new ActionListener() {
@@ -134,7 +139,7 @@ public class EditorPane extends JLayeredPane {
 				_ui.getModel().checkSolution(_onScreenShapes);
 			}
 		});
-		
+
 		_onScreenShapes = new ArrayList<Shape>();
 		_activeReferenceOrigin = null;
 
@@ -157,26 +162,26 @@ public class EditorPane extends JLayeredPane {
 		_t.start();
 
 		//_ui.getModel().addObserver(this);
-
+		_initialized = true;
 	}
 
 	private void createNewObject() {
-		ObjectShape o = new ObjectShape(200, 200);
+		ObjectShape o = new ObjectShape(200, 200, this);
 		_onScreenShapes.add(o);
 		_activeShape = o;
 		_preliminaryPlacing = o;
 	}
 
 	private void createNewVariable() {
-		VariableShape v = new VariableShape(200, 200);
+		VariableShape v = new VariableShape(200, 200, this);
 		_onScreenShapes.add(v);
 		_activeShape = v;
 		_preliminaryPlacing = v;
 	}
-	
+
 	private void createReference() {
 		if (_activeShape != null && "Variable".equals(_activeShape.getType())) {
-			
+
 			//ensure that the selected variable is contained by an object
 			boolean isContained = false;
 			for (Shape s : _onScreenShapes) {
@@ -187,7 +192,7 @@ public class EditorPane extends JLayeredPane {
 					}
 				}
 			}
-			
+
 			//only begin targeting if the variable is contained
 			if (isContained) {
 				_activeReferenceOrigin = (VariableShape) _activeShape;
@@ -226,8 +231,8 @@ public class EditorPane extends JLayeredPane {
 					}
 				}
 			}
-			
-			
+
+
 			_preliminaryPlacing = null;
 
 		} else {
@@ -286,7 +291,7 @@ public class EditorPane extends JLayeredPane {
 				if (checkSuperImposition()) {
 					_activeShape.setX(tempX);
 					_activeShape.setY(tempY);
-					
+
 					displayMessage("You cannot superimpose objects!");
 
 					try {
@@ -300,7 +305,7 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		}
-		
+
 		repaint();
 	}
 
@@ -324,7 +329,7 @@ public class EditorPane extends JLayeredPane {
 
 		repaint();
 	}
-	
+
 	public void displayMessage(String s) {
 		_currentMessage = s;
 		_messageTimer = 150;
@@ -334,7 +339,7 @@ public class EditorPane extends JLayeredPane {
 	private void garbageCollect() {
 
 		ArrayList<Shape> variables = new ArrayList<Shape>();
-		
+
 		Iterator<Shape> i = _onScreenShapes.iterator();
 		while (i.hasNext()) {
 
@@ -345,7 +350,7 @@ public class EditorPane extends JLayeredPane {
 				ObjectShape o = (ObjectShape) s;
 				o.garbageCollect();
 			}
-			
+
 			if (s.isDefunct()) {
 				i.remove();
 				if (s.equals(_activeShape)) {
@@ -353,7 +358,7 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		}
-		
+
 		for (Shape s : _onScreenShapes) {
 			if (s.getType().equals("Variable")) {
 				VariableShape v = (VariableShape) s;
@@ -362,14 +367,27 @@ public class EditorPane extends JLayeredPane {
 				}
 			}
 		}
-		
+
 		repaint();
+	}
+
+	public float getScaling() {
+		return _dynamicScaling;
 	}
 
 	@Override
 	public void paint (Graphics g) {
 
 		Graphics2D g2 = (Graphics2D) g;
+		
+		int numObjects = 0;
+		for (Shape s : _onScreenShapes) {
+			if (s.getType().equals("Object")) {
+				numObjects++;
+			}
+		}
+		
+		_dynamicScaling = 1 - (float) (0.03 * numObjects);
 
 		//"initialization" for active variable
 		VariableShape v = null;
@@ -379,7 +397,7 @@ public class EditorPane extends JLayeredPane {
 				v._hovering = false;
 			}
 		}
-		
+
 		for (Shape s : _onScreenShapes) {
 
 			boolean alreadyDrawn = false;
@@ -408,13 +426,14 @@ public class EditorPane extends JLayeredPane {
 					alreadyDrawn = true;
 				}
 			}
-			
+
 			//display targeting arrow
 			if (_activeReferenceOrigin != null) {
-				Reference r = new Reference(g2, 15, 2.0f);
+				Reference r = new Reference(g2, 15, 2.0f, this);
 				r.drawArrow(_activeReferenceOrigin, 
-						new ObjectShape(_drag.getCurrentLocation().getX(),  _drag.getCurrentLocation().getY()), true);
-				
+						new ObjectShape(_drag.getCurrentLocation().getX(),  
+								_drag.getCurrentLocation().getY(), this), true);
+
 				if (s.getType().equals("Object")) {
 					if (s.contains(_drag.getCurrentLocation().getX(), _drag.getCurrentLocation().getY())) {
 						s.draw(g2, 2, false);
@@ -422,23 +441,23 @@ public class EditorPane extends JLayeredPane {
 					}
 				}
 			}
-			
+
 			//display reference arrow
 			if (s.getType().equals("Variable")) {
 				VariableShape ov = (VariableShape) s;
 				if (ov._reference != null) {
-					Reference r = new Reference(g2, 15, 2.0f);
+					Reference r = new Reference(g2, 15, 2.0f, this);
 					r.drawArrow(ov, ov._reference, false);
 				}
 			}
-			
+
 			if (!alreadyDrawn) {
 				int state = 0; //object is inactive
 				if (s.equals(_activeShape)) state = 1; //object is currently active
 				s.draw(g2, state, s.equals(_preliminaryPlacing));
 			}
 		}
-		
+
 		for (Shape s : _onScreenShapes) {
 			if (s.getType().equals("Object")) {
 				((ObjectShape) s).drawName(g2);
@@ -446,13 +465,17 @@ public class EditorPane extends JLayeredPane {
 				((VariableShape) s).drawName(g2);
 			}
 		}
-		
+
 		//display message
 		if (_messageTimer > 0) {
 			
-			double x = UI.WINDOW_WIDTH / 2 - _currentMessage.length() * 7 - UI.PADDING * 2;
-			double y = (float) UI.PADDING * 1.75;
+			int fontSize = 15;
 			
+			double x = UI.PADDING;
+			double y = _ui.getPaneHeight() - UI.PADDING * 3;
+			
+			g2.setFont(new Font("Sans Serif", Font.PLAIN, fontSize));
+
 			FontMetrics fm = g2.getFontMetrics();
 			Rectangle2D rect = fm.getStringBounds(_currentMessage, g2);
 
@@ -463,49 +486,120 @@ public class EditorPane extends JLayeredPane {
 			UI.enableAntiAliasing(g2);
 			g2.drawString(_currentMessage, (int) x, (int) y);
 		}
-		
+
 		super.paint(g); //draw the JComponents last
 	}
 
 	private class EditButton extends JButton {
 
 		String _type;
-		
+
 		public EditButton(int x, int y, String type) {
 			super();
 			UI.formatJComponent(this, new Dimension(BUTTON_SIZE, BUTTON_SIZE), x, y);
 			_type = type;
 		}
-		
+
 		@Override
 		public void paintComponent(Graphics g) {
-			
+
 			super.paintComponent(g);
-			
+
 			Graphics2D g2 = (Graphics2D) g;
 			UI.enableAntiAliasing(g2);
-			
+
 			//draw circle
 			if (_type.equals("Object")) {
 				BasicStroke solid = new BasicStroke(1.75f);
 				g2.setStroke(solid);
 				g2.draw(new Ellipse2D.Double(BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.5, BUTTON_SIZE * 0.5));
 			}
-			
+
 			//draw square
 			if (_type.equals("Variable")) {
 				BasicStroke solid = new BasicStroke(1.75f);
 				g2.setStroke(solid);
 				g2.draw(new Rectangle2D.Double(BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.5, BUTTON_SIZE * 0.5));
 			}
-			
+
 			//draw arrow
 			if (_type.equals("Reference")) {
-				Reference r = new Reference(g2, 10, 1.75f);
-				r.drawArrow(new VariableShape(BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.75), 
-						new ObjectShape(BUTTON_SIZE * 0.75,  BUTTON_SIZE * 0.25), true);
+				
+				//special case for button arrow
+				float temp = _dynamicScaling;
+				_dynamicScaling = 1f;
+				
+				Reference r = new Reference(g2, 10, 1.75f, _self);
+				r.drawArrow(new VariableShape(BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.75, _self), 
+						new ObjectShape(BUTTON_SIZE * 0.75,  BUTTON_SIZE * 0.25, _self), true);
+				
+				//must revert
+				_dynamicScaling = temp;
 			}
 			
+			//draw 'A'
+			if (_type.equals("Rename")) {
+				
+				BasicStroke solid = new BasicStroke(1.75f);
+				g2.setStroke(solid);
+				
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.5, BUTTON_SIZE * 0.3, 
+						BUTTON_SIZE * 0.33, BUTTON_SIZE * 0.7));
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.5, BUTTON_SIZE * 0.3, 
+						BUTTON_SIZE * 0.67, BUTTON_SIZE * 0.7));
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.44, BUTTON_SIZE * 0.53, 
+						BUTTON_SIZE * 0.56, BUTTON_SIZE * 0.53));
+				
+			}
+			
+			//draw checkmark
+			if (_type.equals("Check")) {
+				
+				BasicStroke solid = new BasicStroke(1.75f);
+				g2.setStroke(solid);
+				
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.45, BUTTON_SIZE * 0.7, 
+						BUTTON_SIZE * 0.35, BUTTON_SIZE * 0.6));
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.45, BUTTON_SIZE * 0.7, 
+						BUTTON_SIZE * 0.7, BUTTON_SIZE * 0.3));
+			}
+			
+			//draw trashcan
+			if (_type.equals("Delete")) {
+				
+				BasicStroke solid = new BasicStroke(1.75f);
+				g2.setStroke(solid);
+				
+				//bottom
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.36, BUTTON_SIZE * 0.76, 
+						BUTTON_SIZE * 0.64, BUTTON_SIZE * 0.76));
+				
+				//left side
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.36, BUTTON_SIZE * 0.76, 
+						BUTTON_SIZE * 0.30, BUTTON_SIZE * 0.35));
+				
+				//right side
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.64, BUTTON_SIZE * 0.76, 
+						BUTTON_SIZE * 0.70, BUTTON_SIZE * 0.35));
+				
+				//top
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.30, BUTTON_SIZE * 0.35, 
+						BUTTON_SIZE * 0.70, BUTTON_SIZE * 0.35));
+				
+				//stripes
+				solid = new BasicStroke(1.5f);
+				g2.setStroke(solid);
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.435, BUTTON_SIZE * 0.76, 
+						BUTTON_SIZE * 0.435, BUTTON_SIZE * 0.35));
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.565, BUTTON_SIZE * 0.76, 
+						BUTTON_SIZE * 0.565, BUTTON_SIZE * 0.35));
+				
+				//lid
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.33, BUTTON_SIZE * 0.27, 
+						BUTTON_SIZE * 0.67, BUTTON_SIZE * 0.27));
+				
+				
+			}
 		}
 	}
 

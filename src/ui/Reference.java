@@ -12,11 +12,13 @@ public class Reference {
 	private Graphics2D _g2;
 	private double _arrowSize;
 	private float _thickness;
+	private EditorPane _parent;
 
-	public Reference(Graphics2D g2, double arrowSize, float thickness) {
+	public Reference(Graphics2D g2, double arrowSize, float thickness, EditorPane parent) {
 		_g2 = g2;
-		_arrowSize = arrowSize;
-		_thickness = thickness;
+		_parent = parent;
+		_arrowSize = arrowSize * _parent.getScaling();
+		_thickness = thickness * _parent.getScaling();
 	}
 
 	public void drawArrow(VariableShape origin, ObjectShape target, boolean targeting) {
@@ -40,8 +42,8 @@ public class Reference {
 		double targetY; 
 
 		if (!targeting) {
-			targetX = (Math.cos(PI - angle) * ObjectShape.RADIUS) + target.getX();
-			targetY = (Math.sin(PI - angle) * ObjectShape.RADIUS) + target.getY();
+			targetX = (Math.cos(PI - angle) * ObjectShape.RADIUS * _parent.getScaling()) + target.getX();
+			targetY = (Math.sin(PI - angle) * ObjectShape.RADIUS * _parent.getScaling()) + target.getY();
 		} else {
 			targetX = target.getX();
 			targetY = target.getY();

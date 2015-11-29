@@ -8,6 +8,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
 import dataset.VirtualClass;
+import ui.EditorPane;
 import ui.UI;
 
 public class VariableShape extends Shape {
@@ -16,8 +17,8 @@ public class VariableShape extends Shape {
 	public boolean _hovering;
 	public ObjectShape _reference;
 
-	public VariableShape(double x, double y) {
-		super(x, y);
+	public VariableShape(double x, double y, EditorPane parent) {
+		super(x, y, parent);
 		_hovering = false;
 	}
 
@@ -25,9 +26,8 @@ public class VariableShape extends Shape {
 	@Override
 	public void draw(Graphics2D g2, int state, boolean preliminary) {
 		super.draw(g2, state, preliminary);
-		g2.draw(new Rectangle2D.Double(_x - SIDE / 2, _y - SIDE / 2, SIDE, SIDE));
-
-		g2.drawString(_name, (float) _x, (float) _y - ((float) SIDE / 2 + 5));
+		g2.draw(new Rectangle2D.Double(_x - (SIDE * _parent.getScaling()) / 2, _y - (SIDE * _parent.getScaling()) / 2, 
+				(SIDE * _parent.getScaling()), (SIDE * _parent.getScaling())));
 
 		//shape objects must clean up after themselves
 		g2.setComposite(UI.generateAlpha(1.0f));
@@ -35,7 +35,7 @@ public class VariableShape extends Shape {
 
 	public void drawName(Graphics2D g2) {
 		float x = (float) _x;
-		float y = (float) _y - ((float) SIDE / 2 + 5);
+		float y = (float) _y - ((float) (SIDE * _parent.getScaling()) / 2 + 5);
 		super.drawName(g2, x, y);
 	}
 
@@ -46,8 +46,8 @@ public class VariableShape extends Shape {
 
 	@Override
 	public boolean contains(double x, double y) {
-		boolean goodX = x >= (_x - SIDE / 2) && x <= (_x + SIDE / 2);
-		boolean goodY = y >= (_y - SIDE / 2) && y <= (_y + SIDE / 2);
+		boolean goodX = x >= (_x - (SIDE * _parent.getScaling()) / 2) && x <= (_x + (SIDE * _parent.getScaling()) / 2);
+		boolean goodY = y >= (_y - (SIDE * _parent.getScaling()) / 2) && y <= (_y + (SIDE * _parent.getScaling()) / 2);
 
 		return goodX && goodY;
 	}

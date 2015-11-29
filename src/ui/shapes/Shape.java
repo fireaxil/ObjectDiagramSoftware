@@ -2,6 +2,7 @@ package ui.shapes;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -10,6 +11,7 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.UIManager;
 
+import ui.EditorPane;
 import ui.UI;
 
 public abstract class Shape {
@@ -23,8 +25,10 @@ public abstract class Shape {
 	protected int _alphaDirection;
 
 	protected String _name;
+	
+	protected EditorPane _parent;
 
-	public Shape(double x, double y) {
+	public Shape(double x, double y, EditorPane parent) {
 		_x = x;
 		_y = y;
 
@@ -32,6 +36,7 @@ public abstract class Shape {
 		_alphaDirection = 2;
 
 		_name = "untitled";
+		_parent = parent;
 	}
 
 	public void draw(Graphics2D g2, int state, boolean preliminary) {
@@ -60,19 +65,21 @@ public abstract class Shape {
 			}
 		}
 
-		BasicStroke solid = new BasicStroke(2.5f);
+		BasicStroke solid = new BasicStroke(2.5f * _parent.getScaling());
 		g2.setStroke(solid);
 	}
 
 	public void drawName(Graphics2D g2, float x, float y) {
 
 		//http://stackoverflow.com/questions/6416201/how-to-draw-string-with-background-on-graphics
+		g2.setFont(new Font("Sans Serif", Font.PLAIN, (int) (18 * _parent.getScaling())));
 		FontMetrics fm = g2.getFontMetrics();
 		Rectangle2D rect = fm.getStringBounds(_name, g2);
 
 		g2.setColor(UIManager.getColor("Panel.background"));
-		g2.fillRect((int) x, (int) y - fm.getAscent(), (int) rect.getWidth(), (int) rect.getHeight());
-
+		g2.fillRect((int) x, (int) ((y - fm.getAscent())), 
+				(int) (rect.getWidth()), (int) (rect.getHeight()));
+		
 		g2.setColor(Color.BLUE);
 		g2.drawString(_name, x, y);
 	}
@@ -87,20 +94,21 @@ public abstract class Shape {
 			double distance = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
 
 			if (this.getType().equals("Object") && s.getType().equals("Object")) {
-				if (distance <= ObjectShape.RADIUS * 2) {
+				if (distance <= ObjectShape.RADIUS * 2 * _parent.getScaling()) {
 					return true;
 				}
 			}
 
 			if (!this.getType().equals(s.getType())) {
-				if (distance <= (ObjectShape.RADIUS + VariableShape.SIDE / 2)) {
+				if (distance <= (ObjectShape.RADIUS * _parent.getScaling() + 
+						(VariableShape.SIDE * _parent.getScaling()) / 2)) {
 					return true;
 				}
 			}
 
 			if (this.getType().equals("Variable") && s.getType().equals("Variable")) {
-				boolean xInRange = (Math.abs((double) (this.getX() - s.getX())) < VariableShape.SIDE);
-				boolean yInRange = (Math.abs((double) (this.getY() - s.getY())) < VariableShape.SIDE);
+				boolean xInRange = (Math.abs((double) (this.getX() - s.getX())) < (VariableShape.SIDE * _parent.getScaling()));
+				boolean yInRange = (Math.abs((double) (this.getY() - s.getY())) < (VariableShape.SIDE * _parent.getScaling()));
 				if (xInRange && yInRange) {
 					return true;
 				}
