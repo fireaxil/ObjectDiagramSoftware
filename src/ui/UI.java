@@ -55,6 +55,7 @@ public class UI implements Runnable {
 		_mainContentPane.setLayout(null);
 		_window.setContentPane(_mainContentPane);
 		_window.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		_window.setResizable(false);
 		_window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		_window.setVisible(true);
@@ -71,6 +72,7 @@ public class UI implements Runnable {
 				WINDOW_WIDTH / 2 + PADDING, PADDING);
 		_mainContentPane.add(_editPane);
 		
+		//add observers
 		_model.addObserver(_codeView);
 		
 	}	

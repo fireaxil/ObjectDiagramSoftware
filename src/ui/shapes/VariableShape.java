@@ -35,7 +35,7 @@ public class VariableShape extends Shape {
 
 	public void drawName(Graphics2D g2) {
 		float x = (float) _x;
-		float y = (float) _y - ((float) (SIDE * _parent.getScaling()) / 2 + 5);
+		float y = (float) _y - ((float) (SIDE * _parent.getScaling()) / 2 + 7);
 		super.drawName(g2, x, y);
 	}
 

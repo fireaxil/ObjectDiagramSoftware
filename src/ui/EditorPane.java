@@ -570,7 +570,7 @@ public class EditorPane extends JLayeredPane {
 				g2.setStroke(solid);
 
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.45, BUTTON_SIZE * 0.7, 
-						BUTTON_SIZE * 0.35, BUTTON_SIZE * 0.6));
+						BUTTON_SIZE * 0.31, BUTTON_SIZE * 0.56));
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.45, BUTTON_SIZE * 0.7, 
 						BUTTON_SIZE * 0.7, BUTTON_SIZE * 0.3));
 			}
