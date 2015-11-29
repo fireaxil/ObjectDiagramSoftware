@@ -118,25 +118,36 @@ public class EditorPane extends JLayeredPane {
 			}
 		});
 
-		_deleteButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 5 + BUTTON_SIZE * 4, "Delete");
-		add(_deleteButton);
-		_deleteButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (_activeShape != null) {
-					_activeShape.dispose();
-					garbageCollect();
-				}
-			}
-		});
-
-		_checkButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 6 + BUTTON_SIZE * 5, "Check");
+		_checkButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 5 + BUTTON_SIZE * 4, "Check");
 		add(_checkButton);
 		_checkButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//have the model check the current solution
 				_ui.getModel().checkSolution(_onScreenShapes);
+			}
+		});
+
+		_deleteButton = new EditButton(UI.PADDING / 2, (UI.PADDING / 2) * 6 + BUTTON_SIZE * 5, "Delete");
+		add(_deleteButton);
+		_deleteButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				if (_activeReferenceOrigin != null) {
+					
+					//stop dragging reference
+					_activeReferenceOrigin = null;
+					
+				} else {
+
+					//perform shape deletion
+					if (_activeShape != null) {
+						_activeShape.dispose();
+						garbageCollect();
+						
+					}
+				}
 			}
 		});
 
@@ -379,15 +390,15 @@ public class EditorPane extends JLayeredPane {
 	public void paint (Graphics g) {
 
 		Graphics2D g2 = (Graphics2D) g;
-		
+
 		int numObjects = 0;
 		for (Shape s : _onScreenShapes) {
 			if (s.getType().equals("Object")) {
 				numObjects++;
 			}
 		}
-		
-		_dynamicScaling = 1 - (float) (0.03 * numObjects);
+
+		_dynamicScaling = 1 - (float) (0.024 * numObjects);
 
 		//"initialization" for active variable
 		VariableShape v = null;
@@ -468,12 +479,12 @@ public class EditorPane extends JLayeredPane {
 
 		//display message
 		if (_messageTimer > 0) {
-			
+
 			int fontSize = 15;
-			
+
 			double x = UI.PADDING;
 			double y = _ui.getPaneHeight() - UI.PADDING * 3;
-			
+
 			g2.setFont(new Font("Sans Serif", Font.PLAIN, fontSize));
 
 			FontMetrics fm = g2.getFontMetrics();
@@ -524,68 +535,68 @@ public class EditorPane extends JLayeredPane {
 
 			//draw arrow
 			if (_type.equals("Reference")) {
-				
+
 				//special case for button arrow
 				float temp = _dynamicScaling;
 				_dynamicScaling = 1f;
-				
+
 				Reference r = new Reference(g2, 10, 1.75f, _self);
 				r.drawArrow(new VariableShape(BUTTON_SIZE * 0.25, BUTTON_SIZE * 0.75, _self), 
 						new ObjectShape(BUTTON_SIZE * 0.75,  BUTTON_SIZE * 0.25, _self), true);
-				
+
 				//must revert
 				_dynamicScaling = temp;
 			}
-			
+
 			//draw 'A'
 			if (_type.equals("Rename")) {
-				
-				BasicStroke solid = new BasicStroke(1.75f);
+
+				BasicStroke solid = new BasicStroke(2.2f);
 				g2.setStroke(solid);
-				
-				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.5, BUTTON_SIZE * 0.3, 
+
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.489, BUTTON_SIZE * 0.3, 
 						BUTTON_SIZE * 0.33, BUTTON_SIZE * 0.7));
-				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.5, BUTTON_SIZE * 0.3, 
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.511, BUTTON_SIZE * 0.3, 
 						BUTTON_SIZE * 0.67, BUTTON_SIZE * 0.7));
-				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.44, BUTTON_SIZE * 0.53, 
-						BUTTON_SIZE * 0.56, BUTTON_SIZE * 0.53));
-				
+				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.44, BUTTON_SIZE * 0.545, 
+						BUTTON_SIZE * 0.56, BUTTON_SIZE * 0.545));
+
 			}
-			
+
 			//draw checkmark
 			if (_type.equals("Check")) {
-				
+
 				BasicStroke solid = new BasicStroke(1.75f);
 				g2.setStroke(solid);
-				
+
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.45, BUTTON_SIZE * 0.7, 
 						BUTTON_SIZE * 0.35, BUTTON_SIZE * 0.6));
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.45, BUTTON_SIZE * 0.7, 
 						BUTTON_SIZE * 0.7, BUTTON_SIZE * 0.3));
 			}
-			
+
 			//draw trashcan
 			if (_type.equals("Delete")) {
-				
+
 				BasicStroke solid = new BasicStroke(1.75f);
 				g2.setStroke(solid);
-				
+
 				//bottom
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.36, BUTTON_SIZE * 0.76, 
 						BUTTON_SIZE * 0.64, BUTTON_SIZE * 0.76));
-				
+
 				//left side
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.36, BUTTON_SIZE * 0.76, 
 						BUTTON_SIZE * 0.30, BUTTON_SIZE * 0.35));
-				
+
 				//right side
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.64, BUTTON_SIZE * 0.76, 
 						BUTTON_SIZE * 0.70, BUTTON_SIZE * 0.35));
-				
+
 				//top
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.30, BUTTON_SIZE * 0.35, 
 						BUTTON_SIZE * 0.70, BUTTON_SIZE * 0.35));
-				
+
 				//stripes
 				solid = new BasicStroke(1.5f);
 				g2.setStroke(solid);
@@ -593,12 +604,12 @@ public class EditorPane extends JLayeredPane {
 						BUTTON_SIZE * 0.435, BUTTON_SIZE * 0.35));
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.565, BUTTON_SIZE * 0.76, 
 						BUTTON_SIZE * 0.565, BUTTON_SIZE * 0.35));
-				
+
 				//lid
 				g2.draw(new Line2D.Double(BUTTON_SIZE * 0.33, BUTTON_SIZE * 0.27, 
 						BUTTON_SIZE * 0.67, BUTTON_SIZE * 0.27));
-				
-				
+
+
 			}
 		}
 	}

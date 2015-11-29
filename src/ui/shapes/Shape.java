@@ -72,7 +72,7 @@ public abstract class Shape {
 	public void drawName(Graphics2D g2, float x, float y) {
 
 		//http://stackoverflow.com/questions/6416201/how-to-draw-string-with-background-on-graphics
-		g2.setFont(new Font("Sans Serif", Font.PLAIN, (int) (18 * _parent.getScaling())));
+		g2.setFont(new Font("Sans Serif", Font.PLAIN, (int) (16 * _parent.getScaling())));
 		FontMetrics fm = g2.getFontMetrics();
 		Rectangle2D rect = fm.getStringBounds(_name, g2);
 
