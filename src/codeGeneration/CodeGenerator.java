@@ -81,6 +81,7 @@ public class CodeGenerator {
 			//base case
 			_masterSet.output();
 			outputLocalVars();
+			System.out.println(_caseMapping);
 			return code;
 		
 		} else {
@@ -92,6 +93,7 @@ public class CodeGenerator {
 			//we need to set the top level instances vars to those of the base instance, which have the correct info 
 			_masterSet = cg.getMasterSet();
 			_localVars = cg.getLocalVars();
+			_caseMapping = cg.getCaseMapping();
 			
 			return result;
 			
@@ -190,7 +192,9 @@ public class CodeGenerator {
 				//check to see if it is referring to anything
 				for (VirtualInstanceVariable viv : vo.getInstanceVariables()){
 					if (viv.getTarget() != null){
-						if (decider == 1){
+						
+						//if it was 2 before, it has to stay 2
+						if (decider == 1 || decider == 2){
 							decider = 2;
 						} else {
 							decider = 3;
@@ -385,6 +389,10 @@ public class CodeGenerator {
 
 	public HashSet<String> getCases() {
 		return _cases;
+	}
+	
+	private HashMap<String, String> getCaseMapping() {
+		return _caseMapping;
 	}
 	
 	//should probably return a deep copy, just to be safe

@@ -39,7 +39,23 @@ public class SolutionChecker {
 		boolean checkVarNamesInObjects = false;
 		boolean checkReferences = false;
 
-		//checking class number
+		//checking Object number
+		int ObjectNum = 0;
+		for(int i = 0; i <shapes.size(); i ++){
+			if(shapes.get(i).getClass().equals(ObjectShape.class)){
+				ObjectNum ++;
+			}
+		}
+
+		if(ObjectNum == instances.size()){
+			checkObjectNum = true;
+		}
+		else{
+			JOptionPane.showMessageDialog(frame, "Check your number of Objects");
+			return false;
+		}
+
+		//checking class names
 		HashSet<String> classCount = new HashSet<String>();
 		Set<String> currentlocalVars =  locals.keySet();
 
@@ -69,22 +85,6 @@ public class SolutionChecker {
 			return false;
 		}
 		//}
-
-		//checking Object number
-		int ObjectNum = 0;
-		for(int i = 0; i <shapes.size(); i ++){
-			if(shapes.get(i).getClass().equals(ObjectShape.class)){
-				ObjectNum ++;
-			}
-		}
-
-		if(ObjectNum == instances.size()){
-			checkObjectNum = true;
-		}
-		else{
-			JOptionPane.showMessageDialog(frame, "Check your number of Objects");
-			return false;
-		}
 
 
 		//checking ObjectNames and corresponding numbers
@@ -181,7 +181,7 @@ public class SolutionChecker {
 				currentObjects.add((ObjectShape) shapes.get(i));
 			}
 		}
-		
+
 		for(ObjectShape o: currentObjects){
 			ArrayList<VariableShape> iv = o.getInstanceVariables();
 			String s = o.getName();
@@ -201,7 +201,7 @@ public class SolutionChecker {
 							return false;
 						}
 					}
-					
+
 				}
 			}
 		}
@@ -304,7 +304,7 @@ public class SolutionChecker {
 			JOptionPane.showMessageDialog(frame, "Good Job!");
 			return true;
 		}
-		
+
 		return false;
 
 	}
