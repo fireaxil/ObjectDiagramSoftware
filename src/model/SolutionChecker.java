@@ -27,13 +27,10 @@ public class SolutionChecker {
 	public static boolean checkSolution(ArrayList<Shape> shapes, MasterSet set, HashMap<String, ArrayList<String[]>> locals) {
 		JFrame frame = new JFrame();
 
-		//ArrayList<VirtualClass> classes = set.getClasses();
 		ArrayList<VirtualObject> instances = set.getObjects();
 
-		//boolean checkClassesNum = false;
 		boolean checkClassName = false;
 		boolean checkObjectNum = false;
-		//boolean checkObjectName = false;
 		boolean checkVarNum = false;
 		boolean checkVarNames = false;
 		boolean checkVarNamesInObjects = false;
@@ -66,59 +63,13 @@ public class SolutionChecker {
 			}		
 		}
 
-		/*if(classCount.size() == classes.size()){
-			checkClassesNum = true;
-		}
-		else{
-			JOptionPane.showInputDialog("Check your number of Classes");
-			return false;
-		}*/
-
-		//checking classNames
-		//for(int i = 0; i < classes.size(); i ++){
 		if(classCount.equals(currentlocalVars)){
-			//if(classCount.contains(classes.get(i).getName())){
 			checkClassName = true;
 		}
 		else{
 			JOptionPane.showMessageDialog(frame,"Check your Class names");
 			return false;
 		}
-		//}
-
-
-		//checking ObjectNames and corresponding numbers
-		/*HashMap<String, Integer> existingObjects = new HashMap<String, Integer>();
-
-		for(int i = 0; i <shapes.size(); i++ ){
-			if(shapes.get(i).getClass().equals(ObjectShape.class)){
-				if(existingObjects.containsKey(shapes.get(i).getName())){
-					existingObjects.put(shapes.get(i).getName() , existingObjects.get(shapes.get(i).getName() + 1));
-				}
-				else{
-					existingObjects.put(shapes.get(i).getName(), 1);
-				}	
-			}
-		}
-
-		HashMap<String, Integer> wantedObjects = new HashMap<String, Integer>();
-
-		for(int i = 0; i < instances.size(); i ++){
-			if(wantedObjects.containsKey(instances.get(i).getTypeName())){
-				wantedObjects.put(instances.get(i).getTypeName(), wantedObjects.get(instances.get(i).getTypeName() + 1));
-			}
-			else{
-				wantedObjects.put(instances.get(i).getTypeName(), 1);
-			}
-		}
-
-		if(existingObjects.equals(locals)){
-			checkObjectName = true;
-		}
-		else{
-			JOptionPane.showInputDialog("Check your number of Objects and Corresponding number of instantiations");
-			return false;
-		}*/
 
 		//checking number of instance variables
 		int varNum = 0;
@@ -205,39 +156,8 @@ public class SolutionChecker {
 				}
 			}
 		}
-
-		/*for(int i = 0; i < currentObjects.size(); i ++){
-			ArrayList<VariableShape> iv = currentObjects.get(i).getInstanceVariables();
-			String s = currentObjects.get(i).getName();
-			for(int y = 0; y<instances.size(); y++){
-				if(instances.get(y).getTypeName().equals(s)){
-					ArrayList<VirtualInstanceVariable> iv2 = instances.get(y).getInstanceVariables();
-					ArrayList<String> iv2Strings = new ArrayList<String>();
-					for(int z = 0; z <iv2.size(); z ++){
-						iv2Strings.add(iv2.get(z).getName());	
-					}
-					for(int x  = 0; x < iv.size(); x ++){
-						if(iv2Strings.contains(iv.get(x).getName())){
-							checkVarNamesInObjects = true;
-						}
-						else{
-							JOptionPane.showMessageDialog(frame, "Check your Variable Names in each Object");
-							return false;
-						}
-					}
-				}
-			}
-		}*/
-
-
+		
 		//Check References
-		/*ArrayList<VariableShape> vars = new ArrayList<VariableShape>();
-		for(int i = 0; i < shapes.size(); i++){
-			if(shapes.get(i).getClass().equals(VariableShape.class)){
-				vars.add((VariableShape) shapes.get(i));
-			}
-		}*/
-
 		int correctReferences = 0;
 		int wantedReferences = 0;
 
@@ -252,13 +172,6 @@ public class SolutionChecker {
 				}
 			}
 		}
-		/*for(VirtualObject x: instances){
-			ArrayList<VirtualInstanceVariable> ix = x.getInstanceVariables();
-			System.out.println(ix.toString());
-			for(VirtualInstanceVariable v : ix){
-				System.out.println(v.getTarget());
-			}
-		}*/
 
 		for(ObjectShape os: currentObjects){
 			ArrayList<VariableShape> varso = os.getInstanceVariables();
@@ -272,16 +185,10 @@ public class SolutionChecker {
 								String target = vs.getReference().getName();
 								if(target.equals(v.getTarget().getLocalVariable())){
 									correctReferences +=2;
-									//checkReferences = true;
 								}
-								/*else{
-									checkReferences = false;
-								}*/
-
 							}
 							if(vs.getReference() == null && v.getTarget() == null){
 								correctReferences +=1;
-
 							}
 						}
 					}
@@ -289,8 +196,6 @@ public class SolutionChecker {
 			}
 		}
 
-		System.out.println(correctReferences);
-		System.out.println(wantedReferences);
 		if(correctReferences == wantedReferences){
 			checkReferences = true;
 		}
@@ -298,7 +203,6 @@ public class SolutionChecker {
 			JOptionPane.showMessageDialog(frame, "Check your References");
 			return false;	
 		}
-
 
 		if(checkClassName && checkObjectNum && checkVarNum && checkVarNames && checkVarNamesInObjects && checkReferences){
 			JOptionPane.showMessageDialog(frame, "Good Job!");
