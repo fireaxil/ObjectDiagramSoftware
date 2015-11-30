@@ -87,7 +87,7 @@ public class MasterSet {
 		VirtualObject o = new VirtualObject(_classes.get(0), _currentObjectID);
 		_currentObjectID++;
 		for (VirtualInstanceVariable v : _classes.get(0).getInstanceVars()) {
-			VirtualInstanceVariable newVariable = new VirtualInstanceVariable(v.getName(), v.getType());
+			VirtualInstanceVariable newVariable = new VirtualInstanceVariable(v.getName(), v.getType(), o);
 			o.addInstanceVariable(newVariable);
 		}
 		return o;

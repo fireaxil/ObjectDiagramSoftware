@@ -9,6 +9,8 @@ public class VirtualObject {
 	private ArrayList<VirtualInstanceVariable> _instanceVariables;
 	private ArrayList<VirtualObject> _targetedBy;
 	
+	private String _localVariable;
+	
 	private int _id;
 	
 	public VirtualObject(VirtualClass type, int id) {
@@ -40,6 +42,14 @@ public class VirtualObject {
 	
 	public int getID() {
 		return _id;
+	}
+	
+	public void setLocalVariable(String s){
+		_localVariable = s;
+	}
+	
+	public String getLocalVariable(){
+		return _localVariable;
 	}
 	
 	@Override

@@ -6,7 +6,14 @@ public class VirtualInstanceVariable {
 	private String _name;
 	
 	private VirtualObject _target;
+	private VirtualObject _origin;
 	
+	public VirtualInstanceVariable(String name, String type, VirtualObject origin) {
+		_name = name;
+		_type = type;
+		_target = null;
+		_origin = origin;
+	}
 	
 	public VirtualInstanceVariable(String name, String type) {
 		_name = name;
@@ -33,6 +40,10 @@ public class VirtualInstanceVariable {
 	@Override
 	public String toString() {
 		return _name;
+	}
+	
+	public VirtualObject getOrigin(){
+		return _origin;
 	}
 }
 

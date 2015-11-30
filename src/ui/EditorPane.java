@@ -125,6 +125,7 @@ public class EditorPane extends JLayeredPane {
 			public void actionPerformed(ActionEvent e) {
 				//have the model check the current solution
 				_ui.getModel().checkSolution(_onScreenShapes);
+				
 			}
 		});
 

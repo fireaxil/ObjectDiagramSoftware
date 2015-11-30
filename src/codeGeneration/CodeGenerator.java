@@ -145,7 +145,7 @@ public class CodeGenerator {
 				}
 			}
 			for(int i = 0; i < vars.size(); i ++){
-				finalCode += "\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ";\n";
+				finalCode += "\t\t" + vars.get(i).getName() + " = " + vars.get(i).getName().substring(1, vars.get(i).getName().length()) + ";\n";
 			}
 			finalCode += "\t}\n}";
 
@@ -269,6 +269,7 @@ public class CodeGenerator {
 						
 						beginning += "\t\t" + type + " " + getChar(varCount) + " = new " + type + "();\n";
 						objectMap.put(currentObject, getChar(varCount));
+						currentObject.setLocalVariable(getChar(varCount));
 						varCount++;
 						
 					}
@@ -280,6 +281,7 @@ public class CodeGenerator {
 						//these can only be safely written after all firsts and duals have been instantiated and assigned
 						dualSetters.add(currentObject);
 						objectMap.put(currentObject, getChar(varCount));
+						currentObject.setLocalVariable(getChar(varCount));
 						varCount++;
 						
 					}
@@ -325,7 +327,7 @@ public class CodeGenerator {
 					ending += ", ";
 				}
 			}
-			
+			o.setLocalVariable(getChar(varCount));
 			varCount++;
 		}
 		

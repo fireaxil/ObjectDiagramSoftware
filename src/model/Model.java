@@ -32,7 +32,7 @@ public class Model extends Observable {
 	public Model() {
 		
 		createNewCode(5, 15, 4);
-		
+
 	}
 	
 	public void createNewCode(int numClasses, int numObjects, int numInstanceVars) {
