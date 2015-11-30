@@ -280,7 +280,7 @@ public class EditorPane extends JLayeredPane {
 	}
 
 	private void cursorDragged(double x, double y) {
-		if (_activeShape != null) {
+		if (_activeShape != null && _preliminaryPlacing == null) {
 
 			//if an object contains the instance variable we're trying to drag, prevent the action
 			boolean canBeDragged = true;
